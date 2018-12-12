@@ -7,9 +7,9 @@ const Block = require('./Block.js');
 
 let myBlockChain = new BlockChain.Blockchain();
 
-setTimeout(function () {
-	console.log("Waiting...")
-}, 10000);
+// setTimeout(function () {
+// 	console.log("Waiting...")
+// }, 10000);
 
 /******************************************
  ** Function for Create Tests Blocks   ****

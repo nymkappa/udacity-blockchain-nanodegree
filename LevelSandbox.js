@@ -31,7 +31,7 @@ class LevelSandbox {
     getBlocksCount() {
         let self = this;
         return new Promise(function(resolve, reject){
-            // Add your code here, remember un Promises you need to resolve() or reject()
+            resolve(0);
         });
     }
         
