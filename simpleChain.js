@@ -8,7 +8,7 @@ console.time('simpleChain');
 /******************************************
 	Settings
 ******************************************/
-let blockNumberToCreate = 0; // Set to 0 to disable it
+let blockNumberToCreate = 4; // Set to 0 to disable it
 let blockCreationDelayMs = 0; // 0 to disable it
 let dumpChainWhenFinish = false;
 let validateChain = true;
@@ -46,6 +46,11 @@ myBlockChain.initialize()
 	if (tamperChain) {
 		console.log('\n============== Tamper blocks ==============\n');
 		const height = await myBlockChain.getBlockHeight();
+
+		if (height < 4) {
+			console.log("Chain is too short to run this test, skipping");
+			return;
+		}
 
 		let height1 = Math.round(height / 4);
 		let height2 = Math.round(height / 3);

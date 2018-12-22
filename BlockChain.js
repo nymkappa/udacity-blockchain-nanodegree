@@ -35,14 +35,14 @@ class Blockchain
             // and resolve()
             if (0 === height) {
                 await this.generateGenesisBlock()
-                return ("Blockchain::initialize, height: " + height + ", head: " + this.lastHash);
+                return ("Blockchain::initialize, height: " + this.currentHeight + ", head: " + this.lastHash);
             }
             else {
                 // Get last block hash
                 const rawBlock = await this.bd.getLevelDBData(height)
                 let block = JSON.parse(rawBlock);
                 this.lastHash = block.hash;
-                return ("Blockchain::initialize, height: " + height + ", head: " + this.lastHash);
+                return ("Blockchain::initialize, height: " + this.currentHeight + ", head: " + this.lastHash);
             }
         } catch (err) {
             console.log(err);
@@ -61,7 +61,7 @@ class Blockchain
 
         // Create genesis block <3
         try {
-            return await this.addBlock(new Block.Block("Such blockchain, so genesis"))
+            return await this.addBlock(new Block.Block("Such blockchain, so genesis"), true);
         } catch (err) {
             console.log(err);
         }
@@ -83,12 +83,17 @@ class Blockchain
     /**
      * Add new block
      *
+     * @param Boolean skipGenesisCheck
      * @param Block block
-     * @param Integer manualHeight - Debug only, if this option is set
-     *                               the block hash is not computed
      * @return Promise of a Block
      */
-    async addBlock(block, manualHeight = null) {
+    async addBlock(block, skipGenesisCheck = false) {
+        if (!skipGenesisCheck) {
+            // Make sure the genesis block is here, and if not,
+            // create it before adding the block
+            await this.generateGenesisBlock();
+        }
+
         ++this.currentHeight;
 
         // Create block data
@@ -147,6 +152,11 @@ class Blockchain
     async validateChain() {
         try {
             const chain = await this.bd.getAllDBData()
+            if (0 === chain.length) {
+                return [];
+            }
+
+            let errors = [];
             let sortedChain = this.getSortedChain(chain);
 
             // Validate first block  
@@ -154,10 +164,9 @@ class Blockchain
             firstBlock.createFromJSON(sortedChain[0]);
             if (!firstBlock.validate()) {
                 errors.push("Invalid block at height: " + firstBlock.height +
-                    ", block data has be changed");
+                    ", block data has been changed");
             }
 
-            let errors = [];
             for (let i = 0; i < sortedChain.length - 1; ++i) {
                 let blockA = new Block.Block('');
                 let blockB = new Block.Block('');                
@@ -167,7 +176,7 @@ class Blockchain
                 // Valildate hash links
                 if (blockB.previousBlockHash != blockA.hash) {
                     errors.push("Invalid block at height " + blockB.height +
-                        ", hash links are broken");                    
+                        ", previous hash link is incorrect, chain has been broken");                    
                 }
                 // Validate block data
                 if (!blockB.validate()) {
