@@ -8,9 +8,11 @@ console.time('simpleChain');
 /******************************************
 	Settings
 ******************************************/
-let blockNumberToCreate = 1; // Set to 0 to disable it
-let blockCreationDelayMs = 100; // 0 to disable it
-let dumpChainWhenFinish = true;
+let blockNumberToCreate = 0; // Set to 0 to disable it
+let blockCreationDelayMs = 0; // 0 to disable it
+let dumpChainWhenFinish = false;
+let validateChain = true;
+let tamperChain = true;
 
 const BlockChain = require('./BlockChain.js');
 const Block = require('./Block.js');
@@ -26,10 +28,64 @@ myBlockChain.initialize()
 	return test_CreateBlocks(blockNumberToCreate, blockCreationDelayMs);
 })
 
+// -- Validate the chain
+.then(async () => {
+	if (validateChain) {
+		console.log('\n============== Validate the chain ==============\n');
+		let errors = await myBlockChain.validateChain();
+		if (errors.length) {
+			console.log("Invalid chain!\n", errors);
+		} else {
+			console.log("Chain is valid!");
+		}
+	}
+})
+
+// -- Modify some blocks and validate again
+.then(async () => {
+	if (tamperChain) {
+		console.log('\n============== Tamper blocks ==============\n');
+		const height = await myBlockChain.getBlockHeight();
+
+		let height1 = Math.round(height / 4);
+		let height2 = Math.round(height / 3);
+		let height3 = Math.round(height / 2);
+
+		const block1 = await myBlockChain.getBlock(height1);
+		const block2 = await myBlockChain.getBlock(height2);
+		const block3 = await myBlockChain.getBlock(height3);
+		
+		// For one block, we just change the body
+		console.log("= Changing body of block " + height1);
+		block1.body = -1;
+		await myBlockChain._modifyBlock(height1, block1);
+
+		// For the 2nd block, we change the body but we also recompute the hash
+		console.log("= Changing body of block and recomputing hash of block " + height2);
+		block2.body = -1;
+		block2.hashBlock();
+		await myBlockChain._modifyBlock(height2, block2);
+
+		// For the 3rd block, we just change the "previous hash" to block1 and hash again
+		console.log("= Changing previousBlockHash of block " + height3);
+		block3.previousBlockHash = block1.hash;
+		block3.hashBlock();
+		await myBlockChain._modifyBlock(height3, block3);
+
+		console.log('\n============== Validate the tampered chain ==============\n');
+		let errors = await myBlockChain.validateChain();
+		if (errors.length) {
+			console.log("Invalid chain!\n", errors);
+		} else {
+			console.log("Chain is valid!");
+		}
+	}
+})
+
 // -- Dump the chain from leveldb
 .then(() => {
-	console.log('\n============== LevelDB chain state ==============\n');
 	if (dumpChainWhenFinish) {
+		console.log('\n============== LevelDB chain state ==============\n');
 		return myBlockChain.dumpChain();
 	}
 })

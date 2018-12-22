@@ -14,7 +14,8 @@ class Block
 	};
 
 	createFromJSON(str) {
-			let obj = JSON.parse(str);
+		let obj = JSON.parse(str);
+
 		this.body = obj.body;
 		this.hash = obj.hash;
 		this.height = obj.height;
@@ -25,7 +26,7 @@ class Block
 	/**
 	 * Hash the block
 	 */
-	hash() {
+	hashBlock() {
 		this.hash = this.calculateHash();
 	};
 

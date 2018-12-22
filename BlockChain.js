@@ -83,33 +83,35 @@ class Blockchain
     /**
      * Add new block
      *
+     * @param Block block
+     * @param Integer manualHeight - Debug only, if this option is set
+     *                               the block hash is not computed
      * @return Promise of a Block
      */
-    async addBlock(block) {
-        let self = this;
-
-        ++self.currentHeight;
+    async addBlock(block, manualHeight = null) {
+        ++this.currentHeight;
 
         // Create block data
         block.time = new Date().getTime();
-        block.height = self.currentHeight;
-        block.previousBlockHash = self.lastHash;
-        block.hash();
+        block.height = this.currentHeight;
+        block.previousBlockHash = this.lastHash;
+        // Compute the block hash
+        block.hashBlock();
 
         // Save the block in the database
         try {
-            await self.bd.addLevelDBData(block.height, block.toString())
+            await this.bd.addLevelDBData(block.height, block.toString())
             console.log("Blockchain::addBlock", block.height, block.toString());
 
             // Cache last block hash
-            self.lastHash = block.hash;
+            this.lastHash = block.hash;
 
             return block;
         }
         catch (err) {
             // Rollback to previous height
-            --self.currentHeight;
-            reject(err);
+            --this.currentHeight;
+            console.log(err);
         }
     }
 
@@ -120,7 +122,9 @@ class Blockchain
      */
     async getBlock(height) {
         try {
-            const block = JSON.parse(await this.bd.getLevelDBData(height));
+            const block = new Block.Block('');
+            const json = await this.bd.getLevelDBData(height);
+            block.createFromJSON(json);
             return block;
         }
         catch (err) {
@@ -129,11 +133,75 @@ class Blockchain
     }
 
     // Validate if Block is being tampered by Block Height
-    validateBlock(height) {
+    async validateBlock(height) {
+        try {
+            const block = JSON.parse(await this.bd.getLevelDBData(height));
+            return block.validate();
+        }
+        catch (err) {
+            console.log(err);
+        }
     }
 
     // Validate Blockchain
-    validateChain() {
+    async validateChain() {
+        try {
+            const chain = await this.bd.getAllDBData()
+            let sortedChain = this.getSortedChain(chain);
+
+            // Validate first block  
+            let firstBlock = new Block.Block('');
+            firstBlock.createFromJSON(sortedChain[0]);
+            if (!firstBlock.validate()) {
+                errors.push("Invalid block at height: " + firstBlock.height +
+                    ", block data has be changed");
+            }
+
+            let errors = [];
+            for (let i = 0; i < sortedChain.length - 1; ++i) {
+                let blockA = new Block.Block('');
+                let blockB = new Block.Block('');                
+                blockA.createFromJSON(sortedChain[i]);
+                blockB.createFromJSON(sortedChain[i + 1]);
+
+                // Valildate hash links
+                if (blockB.previousBlockHash != blockA.hash) {
+                    errors.push("Invalid block at height " + blockB.height +
+                        ", hash links are broken");                    
+                }
+                // Validate block data
+                if (!blockB.validate()) {
+                    errors.push("Invalid block at height: " + blockB.height +
+                        ", block data has been changed");
+                }
+            }
+
+            return errors;
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * Utils to get a sorted Chain composed of Block object
+     * from the levelDB raw stream data
+     */
+    getSortedChain(chain) {
+        let sortedChain = [];
+
+        // Create Block object
+        for (let i = 0; i < chain.length; ++i) {
+            let block = new Block.Block('');
+            block.createFromJSON(chain[i]);
+            sortedChain.push(block);
+        }
+        // Sort by height
+        sortedChain.sort((a, b) => {
+            return a.height - b.height;
+        });
+
+        return sortedChain;
     }
 
     /**
@@ -142,18 +210,8 @@ class Blockchain
     async dumpChain() {
         try {
             const chain = await this.bd.getAllDBData()
-            let sortedChain = [];
+            let sortedChain = this.getSortedChain(chain);
 
-            // Create Block object
-            for (let i = 0; i < chain.length; ++i) {
-                let block = new Block.Block('');
-                block.createFromJSON(chain[i]);
-                sortedChain.push(block);
-            }
-            // Sort by height
-            sortedChain.sort((a, b) => {
-                return a.height - b.height;
-            });
             // Dump it!
             sortedChain.forEach((block) => {
                 block.print();
@@ -166,19 +224,27 @@ class Blockchain
 
     // Utility Method to Tamper a Block for Test Validation
     // This method is for testing purpose
-    _modifyBlock(height, block) {
-        let self = this;
-
-        return new Promise( (resolve, reject) => {
-            self.bd.addLevelDBData(height, JSON.stringify(block).toString()).then((blockModified) => {
-                resolve(blockModified);
-            })
-            .catch((err) => {
-                reject(err)
-            });
-        });
+    async _modifyBlock(height, block) {
+        try {
+            await this._addBlock(block, height);
+        }
+        catch (err) {
+            console.log(err);
+        }
     }
 
+    // Utility Method to Tamper a Block for Test Validation
+    // This method is for testing purpose
+    async _addBlock(block, height) {
+        try {
+            await this.bd.addLevelDBData(height, block.toString())
+            console.log("Blockchain::addBlock", height, block.toString());
+            return block;
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
 }
 
 module.exports.Blockchain = Blockchain;
