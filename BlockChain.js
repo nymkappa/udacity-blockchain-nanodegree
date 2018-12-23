@@ -35,14 +35,14 @@ class Blockchain
             // and resolve()
             if (0 === height) {
                 await this.generateGenesisBlock()
-                return ("Blockchain::initialize, height: " + this.currentHeight + ", head: " + this.lastHash);
+                console.log("Blockchain::initialize, height: " + this.currentHeight + ", head: " + this.lastHash);
             }
             else {
                 // Get last block hash
                 const rawBlock = await this.bd.getLevelDBData(height)
                 let block = JSON.parse(rawBlock);
                 this.lastHash = block.hash;
-                return ("Blockchain::initialize, height: " + this.currentHeight + ", head: " + this.lastHash);
+                console.log("Blockchain::initialize, height: " + this.currentHeight + ", head: " + this.lastHash);
             }
         } catch (err) {
             console.log(err);
@@ -140,8 +140,27 @@ class Blockchain
     // Validate if Block is being tampered by Block Height
     async validateBlock(height) {
         try {
-            const block = JSON.parse(await this.bd.getLevelDBData(height));
-            return block.validate();
+            let errors = [];
+            const block = new Block.Block('');
+            block.createFromJSON(await this.bd.getLevelDBData(height));
+
+            // Validate block data
+            if (!block.validate()) {
+                errors.push("Invalid block at height: " + block.height +
+                    ", block data has been changed");
+            }
+
+            // If we are not validating the genesis block, get the previous block hash
+            if (height >= 2) {
+                const previousBlock = new Block.Block('');
+                previousBlock.createFromJSON(await this.bd.getLevelDBData(height - 1));
+                if (previousBlock.hash != block.previousBlockHash) {
+                    errors.push("Invalid block at height " + block.height +
+                        ", previous hash link is incorrect, chain has been broken");                    
+                }
+            }
+
+            return errors;
         }
         catch (err) {
             console.log(err);

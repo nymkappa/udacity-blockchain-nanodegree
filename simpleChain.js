@@ -8,9 +8,10 @@ console.time('simpleChain');
 /******************************************
 	Settings
 ******************************************/
-let blockNumberToCreate = 4; // Set to 0 to disable it
-let blockCreationDelayMs = 0; // 0 to disable it
-let dumpChainWhenFinish = false;
+let blockNumberToCreate = 100; // Set to 0 to disable it
+let blockCreationDelayMs = 1000; // 0 to disable it
+let dumpChainWhenFinish = true;
+let validateBlocks = true;
 let validateChain = true;
 let tamperChain = true;
 
@@ -23,13 +24,87 @@ let myBlockChain = new BlockChain.Blockchain();
 myBlockChain.initialize()
 
 // -- Create some blocks and add them to the chain
-.then((result) => {
-	console.log(result, '\n\n============== Create ' + blockNumberToCreate + ' blocks ==============\n');
-	return test_CreateBlocks(blockNumberToCreate, blockCreationDelayMs);
+.then(async () => await test_CreateBlocks(blockNumberToCreate, blockCreationDelayMs))
+// -- Validate some blocks randomly
+.then(async () => await test_validateBlocks())
+// -- Validate the chain
+.then(async () => await test_validateChain())
+// -- Modify some blocks and validate again
+.then(async () => await test_tamperAndValidate())
+// -- Dump the chain from leveldb
+.then(async () => await test_dumpChain())
+
+// -- End of tests
+.then(() => {
+	console.log('\n============== Test completed ==============');
+	console.timeEnd('simpleChain');
 })
 
-// -- Validate the chain
-.then(async () => {
+.catch((err) => {
+	console.log(err);
+})
+
+/******************************************
+	Utils
+******************************************/
+
+function sleep(ms) {
+  	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/******************************************
+	Function for Create Tests Blocks
+******************************************/
+
+function test_CreateBlocks(totalBlock, delay) {
+
+	return new Promise(async (resolve) => {
+		console.log('\n\n============== Create ' + blockNumberToCreate + ' blocks ==============\n');
+
+		let createBlock = async function (i) {
+			let blockTest = new Block.Block("Random data: " + Math.random());
+			await myBlockChain.addBlock(blockTest);
+		};
+
+		for (let i = 0; i < totalBlock; ++i) {
+			await createBlock(i);
+			if (delay) {
+				// Wait for [delay - delay / 2, delay + delay * 2] ms
+				await sleep(delay + (Math.random() - 0.5) * delay);
+			}
+		}
+
+		resolve();
+	});
+};
+
+/******************************************
+	Function to validate random blocks
+******************************************/
+
+async function test_validateBlocks() {
+	if (validateBlocks) {
+		console.log('\n============== Validate random blocks ==============\n');
+		const height = await myBlockChain.getBlockHeight();
+
+		for (let i = 0; i < 3 && i < height; ++i) {
+			let randomHeight = Math.max(1, Math.floor(Math.random() * (height - 1)));
+			console.log("= Validate block at height " + randomHeight);
+			const errors = await myBlockChain.validateBlock(randomHeight)
+			if (errors.length) {
+				console.log(errors);
+			} else {
+				console.log("Block is valid");
+			}
+		}
+	}	
+}
+
+/******************************************
+	Function to validate the chain
+******************************************/
+
+async function test_validateChain() {
 	if (validateChain) {
 		console.log('\n============== Validate the chain ==============\n');
 		let errors = await myBlockChain.validateChain();
@@ -38,11 +113,14 @@ myBlockChain.initialize()
 		} else {
 			console.log("Chain is valid!");
 		}
-	}
-})
+	}	
+}
 
-// -- Modify some blocks and validate again
-.then(async () => {
+/*******************************************************
+	Function to tamper blocks and run validation again
+*******************************************************/
+
+async function test_tamperAndValidate() {
 	if (tamperChain) {
 		console.log('\n============== Tamper blocks ==============\n');
 		const height = await myBlockChain.getBlockHeight();
@@ -77,66 +155,21 @@ myBlockChain.initialize()
 		block3.hashBlock();
 		await myBlockChain._modifyBlock(height3, block3);
 
-		console.log('\n============== Validate the tampered chain ==============\n');
-		let errors = await myBlockChain.validateChain();
-		if (errors.length) {
-			console.log("Invalid chain!\n", errors);
-		} else {
-			console.log("Chain is valid!");
-		}
-	}
-})
-
-// -- Dump the chain from leveldb
-.then(() => {
-	if (dumpChainWhenFinish) {
-		console.log('\n============== LevelDB chain state ==============\n');
-		return myBlockChain.dumpChain();
-	}
-})
-
-// -- End of tests
-.then(() => {
-	console.log('\n============== Test completed ==============');
-	console.timeEnd('simpleChain');
-})
-
-.catch((err) => {
-	console.log(err);
-})
-
-/******************************************
-	Utils
-******************************************/
-
-function sleep(ms) {
-  	return new Promise(resolve => setTimeout(resolve, ms));
+		await test_validateBlocks();
+		await test_validateChain();
+	}	
 }
 
 /******************************************
-	Function for Create Tests Blocks
+	Function to dump the chain
 ******************************************/
 
-function test_CreateBlocks(totalBlock, delay) {
-
-	return new Promise(async (resolve) => {
-		let createBlock = async function (i) {
-			let blockTest = new Block.Block("Random data: " + Math.random());
-			await myBlockChain.addBlock(blockTest);
-		};
-
-		for (let i = 0; i < totalBlock; ++i) {
-			await createBlock(i);
-			if (delay) {
-				// Wait for [delay - delay / 2, delay + delay * 2] ms
-				await sleep(delay + (Math.random() - 0.5) * delay);
-			}
-		}
-
-		resolve();
-	});
-};
-
+function test_dumpChain() {
+	if (dumpChainWhenFinish) {
+		console.log('\n============== LevelDB chain state ==============\n');
+		return myBlockChain.dumpChain();
+	}	
+}
 
 /***********************************************
  ** Function to get the Height of the Chain ****
