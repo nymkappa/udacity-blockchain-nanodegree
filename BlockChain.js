@@ -22,6 +22,8 @@ class Blockchain
      * Check in the database if we already have a chain
      * If so, get the chain height and the last block hash
      * Otherwise, create the genesis block
+     *
+     * @return Promise
      */
     async initialize() {
         console.log("Blockchain::initialize");
@@ -51,6 +53,8 @@ class Blockchain
 
     /**
      * Generate the genesis block if needed
+     *
+     * @return Promise of a Block or a string
      */
      async generateGenesisBlock() {
         if (this.currentHeight > 0) {
@@ -85,7 +89,7 @@ class Blockchain
      *
      * @param Boolean skipGenesisCheck
      * @param Block block
-     * @return Promise of a Block
+     * @return Promise of the added Block
      */
     async addBlock(block, skipGenesisCheck = false) {
         if (!skipGenesisCheck) {
@@ -123,13 +127,19 @@ class Blockchain
     /**
      * Get Block By Height
      *
+     * @param Integer heigth
      * @return Promise of a Block
      */
     async getBlock(height) {
         try {
+            if (height <= 0 || height > this.currentHeight) {
+                return null;
+            }
+
             const block = new Block.Block('');
             const json = await this.bd.getLevelDBData(height);
             block.createFromJSON(json);
+
             return block;
         }
         catch (err) {
@@ -137,71 +147,43 @@ class Blockchain
         }
     }
 
-    // Validate if Block is being tampered by Block Height
+    /**
+     * Validate if Block is being tampered by Block Height
+     *
+     * @param Interger height
+     * @return Promise of an array of string containing errors if any
+     */
     async validateBlock(height) {
         try {
             let errors = [];
-            const block = new Block.Block('');
-            block.createFromJSON(await this.bd.getLevelDBData(height));
+            let blocks = [];
 
-            // Validate block data
-            if (!block.validate()) {
-                errors.push("Invalid block at height: " + block.height +
-                    ", block data has been changed");
-            }
+            // Get previous, current and next block and
+            // validate their content
+            for (let i = height - 1; i <= height + 1; ++i) {
+                let block = await this.getBlock(i);
+                blocks.push(block);
 
-            // If we are not validating the genesis block, get the previous block hash
-            if (height >= 2) {
-                const previousBlock = new Block.Block('');
-                previousBlock.createFromJSON(await this.bd.getLevelDBData(height - 1));
-                if (previousBlock.hash != block.previousBlockHash) {
-                    errors.push("Invalid block at height " + block.height +
-                        ", previous hash link is incorrect, chain has been broken");                    
-                }
-            }
-
-            return errors;
-        }
-        catch (err) {
-            console.log(err);
-        }
-    }
-
-    // Validate Blockchain
-    async validateChain() {
-        try {
-            const chain = await this.bd.getAllDBData()
-            if (0 === chain.length) {
-                return [];
-            }
-
-            let errors = [];
-            let sortedChain = this.getSortedChain(chain);
-
-            // Validate first block  
-            let firstBlock = new Block.Block('');
-            firstBlock.createFromJSON(sortedChain[0]);
-            if (!firstBlock.validate()) {
-                errors.push("Invalid block at height: " + firstBlock.height +
-                    ", block data has been changed");
-            }
-
-            for (let i = 0; i < sortedChain.length - 1; ++i) {
-                let blockA = new Block.Block('');
-                let blockB = new Block.Block('');                
-                blockA.createFromJSON(sortedChain[i]);
-                blockB.createFromJSON(sortedChain[i + 1]);
-
-                // Valildate hash links
-                if (blockB.previousBlockHash != blockA.hash) {
-                    errors.push("Invalid block at height " + blockB.height +
-                        ", previous hash link is incorrect, chain has been broken");                    
-                }
-                // Validate block data
-                if (!blockB.validate()) {
-                    errors.push("Invalid block at height: " + blockB.height +
+                if (block && !block.validate()) {
+                    errors.push("Invalid block at height: " + i +
                         ", block data has been changed");
                 }
+            }
+
+            // We are not validating the last block
+            // Validate link between current and next
+            if (height !== this.currentHeight &&
+                blocks[1].hash !== blocks[2].previousBlockHash) {
+                errors.push("Hash link between block " + height +
+                    " and block " + (height + 1) + " is broken");
+            }
+
+            // We are not validating the genesis block
+            // Validate link between current and previous
+            if (height >= 2 &&
+                blocks[0].hash !== blocks[1].previousBlockHash) {
+                errors.push("Hash link between block " + height +
+                    " and block " + (height - 1) + " is broken");
             }
 
             return errors;
@@ -212,10 +194,77 @@ class Blockchain
     }
 
     /**
+     * Validate Blockchain
+     */
+    async validateChain() {
+        try {
+            let errors = [];
+            for (let i = 1; i <= this.currentHeight; ++i) {
+                let blockErrors = await this.validateBlock(i);
+                // This code makes sure we only don't have duplicates
+                // error messages
+                // https://stackoverflow.com/a/23080662
+                errors = errors.concat(blockErrors.filter(function (item) {
+                    return errors.indexOf(item) < 0;
+                }));
+            }
+            return errors;
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * Dump the whole chain in the console
+     */
+    async dumpChain() {
+        try {
+            const chain = await this.bd.getAllDBData()
+            let sortedChain = this._getSortedChain(chain);
+
+            // Dump it!
+            sortedChain.forEach((block) => {
+                block.print();
+            });
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**********************************************************
+        Utils
+    **********************************************************/
+
+    /**
+     * Check two things:
+     *      1. Check if the hash link between current and previous is correct
+     *      2. Check if the has link between current and next is correct
+     *
+     * @param Block previousBlock
+     * @param Block currentBlock
+     * @param Block nextBlock
+     *
+     * @return Boolean
+     */
+    _validateHashLink(previousBlock, currentBlock, nextBlock) {
+        return (
+            // Check link between previous and current
+            currentBlock.previousBlockHash !== previousBlock.hash ||
+            // Check link between next and current
+            nextBlock.previousBlockHash !== currentBlock.hash
+        );
+    }
+
+    /**
      * Utils to get a sorted Chain composed of Block object
      * from the levelDB raw stream data
+     *
+     * @param Array chain - Unsorted raw chain from levelDB
+     * @return Array - Array of Block object sorted by height
      */
-    getSortedChain(chain) {
+    _getSortedChain(chain) {
         let sortedChain = [];
 
         // Create Block object
@@ -233,37 +282,14 @@ class Blockchain
     }
 
     /**
-     * Dump the whole chain in the console
+     * Utility Method to Tamper a Block for Test Validation
+     * This method is for testing purpose
+     *
+     * @param Integer height
+     * @param Block block
+     * @return Block - The modified block
      */
-    async dumpChain() {
-        try {
-            const chain = await this.bd.getAllDBData()
-            let sortedChain = this.getSortedChain(chain);
-
-            // Dump it!
-            sortedChain.forEach((block) => {
-                block.print();
-            });
-        }
-        catch (err) {
-            console.log(err);
-        }
-    }
-
-    // Utility Method to Tamper a Block for Test Validation
-    // This method is for testing purpose
-    async _modifyBlock(height, block) {
-        try {
-            await this._addBlock(block, height);
-        }
-        catch (err) {
-            console.log(err);
-        }
-    }
-
-    // Utility Method to Tamper a Block for Test Validation
-    // This method is for testing purpose
-    async _addBlock(block, height) {
+    async test_modifyBlock(height, block) {
         try {
             await this.bd.addLevelDBData(height, block.toString())
             console.log("Blockchain::addBlock", height, block.toString());

@@ -35,7 +35,7 @@ class LevelSandbox
         try {
             return await this.db.get(key);
         } catch (err) {
-            console.log(err);
+            console.log("getLevelDBData::", err);
         }
     }
 

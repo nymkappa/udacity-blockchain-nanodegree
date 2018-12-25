@@ -8,9 +8,9 @@ console.time('simpleChain');
 /******************************************
 	Settings
 ******************************************/
-let blockNumberToCreate = 100; // Set to 0 to disable it
-let blockCreationDelayMs = 1000; // 0 to disable it
-let dumpChainWhenFinish = true;
+let blockNumberToCreate = 10000; // Set to 0 to disable it
+let blockCreationDelayMs = 0; // 0 to disable it
+let dumpChainWhenFinish = false;
 let validateBlocks = true;
 let validateChain = true;
 let tamperChain = true;
@@ -97,7 +97,7 @@ async function test_validateBlocks() {
 				console.log("Block is valid");
 			}
 		}
-	}	
+	}
 }
 
 /******************************************
@@ -113,7 +113,7 @@ async function test_validateChain() {
 		} else {
 			console.log("Chain is valid!");
 		}
-	}	
+	}
 }
 
 /*******************************************************
@@ -137,27 +137,27 @@ async function test_tamperAndValidate() {
 		const block1 = await myBlockChain.getBlock(height1);
 		const block2 = await myBlockChain.getBlock(height2);
 		const block3 = await myBlockChain.getBlock(height3);
-		
+
 		// For one block, we just change the body
 		console.log("= Changing body of block " + height1);
 		block1.body = -1;
-		await myBlockChain._modifyBlock(height1, block1);
+		await myBlockChain.test_modifyBlock(height1, block1);
 
 		// For the 2nd block, we change the body but we also recompute the hash
 		console.log("= Changing body of block and recomputing hash of block " + height2);
 		block2.body = -1;
 		block2.hashBlock();
-		await myBlockChain._modifyBlock(height2, block2);
+		await myBlockChain.test_modifyBlock(height2, block2);
 
 		// For the 3rd block, we just change the "previous hash" to block1 and hash again
 		console.log("= Changing previousBlockHash of block " + height3);
 		block3.previousBlockHash = block1.hash;
 		block3.hashBlock();
-		await myBlockChain._modifyBlock(height3, block3);
+		await myBlockChain.test_modifyBlock(height3, block3);
 
 		await test_validateBlocks();
 		await test_validateChain();
-	}	
+	}
 }
 
 /******************************************
@@ -168,7 +168,7 @@ function test_dumpChain() {
 	if (dumpChainWhenFinish) {
 		console.log('\n============== LevelDB chain state ==============\n');
 		return myBlockChain.dumpChain();
-	}	
+	}
 }
 
 /***********************************************
