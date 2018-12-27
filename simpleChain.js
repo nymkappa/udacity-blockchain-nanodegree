@@ -9,11 +9,15 @@ console.time('simpleChain');
 	Settings
 ******************************************/
 let blockNumberToCreate = 10; // Set to 0 to disable it
-let blockCreationDelayMs = 100; // 0 to disable it
+let blockCreationDelayMs = 500; // 0 to disable it
 let dumpChainWhenFinish = true;
+let tamperChain = true;
 let validateBlocks = true;
 let validateChain = true;
-let tamperChain = true;
+
+/******************************************
+	Context initialization
+******************************************/
 
 const BlockChain = require('./BlockChain.js');
 const Block = require('./Block.js');
@@ -22,6 +26,10 @@ let myBlockChain = new BlockChain.Blockchain();
 
 // -- Initialize blockchain data from leveldb
 myBlockChain.initialize()
+
+/******************************************
+	Tests
+******************************************/
 
 // -- Create some blocks and add them to the chain
 .then(async () => await test_CreateBlocks(blockNumberToCreate, blockCreationDelayMs))
