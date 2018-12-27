@@ -1,16 +1,20 @@
-/* ===== Persist data with LevelDB ==================
-|  Learn more: level: https://github.com/Level/level |
-/===================================================*/
-
 const level = require('level');
 const chainDB = './chaindata';
 
 class LevelSandbox
 {
+    /**
+     * Constructor
+     */
     constructor() {
         this.db = level(chainDB);
     }
 
+    /**
+     * Return the all [key, value] pairs from the db
+     *
+     * @return Promise of an array of data
+     */
     getAllDBData() {
         let self = this;
 
@@ -22,7 +26,7 @@ class LevelSandbox
                 chain.splice(data.key, 0, data.value);
             })
             .on('error', function (err) {
-                reject(err);
+                reject("LevelSandbox::getAllDBData error, " + err);
             })
             .on('close', function () {
                 resolve(chain);
@@ -30,25 +34,39 @@ class LevelSandbox
         });
     }
 
-    // Get data from levelDB with key (Promise)
+    /**
+     * Get data from levelDB with key
+     *
+     * @param Mixed key
+     * @return Promise of a [key, value] pair
+     */
     async getLevelDBData(key) {
         try {
             return await this.db.get(key);
         } catch (err) {
-            console.log("getLevelDBData::", err);
+            console.log("LevelSandbox::getLevelDBData", err);
         }
     }
 
-    // Add data to levelDB with key and value (Promise)
+    /**
+     * Add data to levelDB with key and value
+     *
+     * @param Mixed key
+     * @param Mixed value
+     */
     async addLevelDBData(key, value) {
         try {
             await this.db.put(key, value)
         } catch (err) {
-            console.log(err);
+            console.log("LevelSandbox::addLevelDBData", err);
         }
     }
 
-    // Method that return the height
+    /**
+     * Method that return the height
+     *
+     * @return Promise of an integer
+     */
     getBlocksCount() {
         let self = this;
 
@@ -63,7 +81,7 @@ class LevelSandbox
                 resolve(height);
             })
             .on('error', function (err) {
-                reject(err);
+                reject("LevelSandbox::getBlocksCount error, " + err);
             })
         });
     }

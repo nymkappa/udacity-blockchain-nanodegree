@@ -1,13 +1,10 @@
 {
-  "name": "project_2",
+  "name": "udacity-private-blockchain",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
+  "description": "Implementation of the 'Private Blockchain' project from Udacity Nanodegree",
+  "main": "simpleChain.js",
+  "author": "Joris Vial",
+  "license": "MIT",
   "dependencies": {
     "crypto-js": "^3.1.9-1",
     "level": "^4.0.0"

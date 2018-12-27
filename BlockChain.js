@@ -1,7 +1,3 @@
-/* ===== Blockchain Class ==========================
-|  Class with a constructor for new blockchain 		|
-|  ================================================*/
-
 const LevelSandbox = require('./LevelSandbox.js');
 const Block = require('./Block.js');
 
@@ -47,7 +43,7 @@ class Blockchain
                 console.log("Blockchain::initialize, height: " + this.currentHeight + ", head: " + this.lastHash);
             }
         } catch (err) {
-            console.log(err);
+            console.log("Blockchain::initialize", err);
         }
     }
 
@@ -67,7 +63,7 @@ class Blockchain
         try {
             return await this.addBlock(new Block.Block("Such blockchain, so genesis"), true);
         } catch (err) {
-            console.log(err);
+            console.log("Blockchain::generateGenesisBlock", err);
         }
     }
 
@@ -80,7 +76,7 @@ class Blockchain
         try {
             return await this.bd.getBlocksCount()
         } catch (err) {
-            console.log(err);
+            console.log("Blockchain::getBlockHeight", err);
         }
     }
 
@@ -120,7 +116,7 @@ class Blockchain
         catch (err) {
             // Rollback to previous height
             --this.currentHeight;
-            console.log(err);
+            console.log("Blockchain::addBlock", err);
         }
     }
 
@@ -143,7 +139,7 @@ class Blockchain
             return block;
         }
         catch (err) {
-            console.log(err);
+            console.log("Blockchain::getBlock", err);
         }
     }
 
@@ -189,12 +185,14 @@ class Blockchain
             return errors;
         }
         catch (err) {
-            console.log(err);
+            console.log("Blockchain::validateBlock", err);
         }
     }
 
     /**
      * Validate Blockchain
+     *
+     * @return Array of string containing errors if any
      */
     async validateChain() {
         try {
@@ -211,7 +209,7 @@ class Blockchain
             return errors;
         }
         catch (err) {
-            console.log(err);
+            console.log("Blockchain::validateChain", err);
         }
     }
 
@@ -229,7 +227,7 @@ class Blockchain
             });
         }
         catch (err) {
-            console.log(err);
+            console.log("Blockchain::dumpChain", err);
         }
     }
 
@@ -296,7 +294,7 @@ class Blockchain
             return block;
         }
         catch (err) {
-            console.log(err);
+            console.log("Blockchain::test_modifyBlock", err);
         }
     }
 }
