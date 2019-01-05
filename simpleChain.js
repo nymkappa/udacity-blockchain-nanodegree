@@ -1,5 +1,5 @@
 /* ===== Executable Test ==================================
-|  Use this file to test your project.
+|  Use this file to generate some data for the blockchain
 |  =========================================================*/
 
 console.log('============== Test started ==============\n');
@@ -8,10 +8,10 @@ console.time('simpleChain');
 /******************************************
 	Settings
 ******************************************/
-let blockNumberToCreate = 10; // Set to 0 to disable it
-let blockCreationDelayMs = 500; // 0 to disable it
+let blockNumberToCreate = 100; // Set to 0 to disable it
+let blockCreationDelayMs = 50; // 0 to disable it
 let dumpChainWhenFinish = true;
-let tamperChain = true;
+let tamperChain = false;
 let validateBlocks = true;
 let validateChain = true;
 
