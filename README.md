@@ -31,7 +31,7 @@ To setup the project for review do the following:
     <li>402 - Database error</li>
 </ul>
 <h3><span style="color: #ff6600; background-color: #000000;">POST /block</span></h3>
-<p>Add a block to the blockchain. Params must be a JSON object.</p>
+<p>Add a block to the blockchain. Params must be a JSON object. "body" must be a sring.</p>
 <p><span style="color: #008080;"><strong>Params:</strong></span></p>
 <blockquote>
     <p>{<br />&nbsp;&nbsp;&nbsp; "body": "This is my new block!"<br />}</p>
