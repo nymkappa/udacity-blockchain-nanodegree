@@ -9,11 +9,11 @@ console.time('simpleChain');
 	Settings
 ******************************************/
 let blockNumberToCreate = 100; // Set to 0 to disable it
-let blockCreationDelayMs = 50; // 0 to disable it
-let dumpChainWhenFinish = true;
+let blockCreationDelayMs = 10; // 0 to disable it
+let dumpChainWhenFinish = false;
 let tamperChain = false;
-let validateBlocks = true;
-let validateChain = true;
+let validateBlocks = false;
+let validateChain = false;
 
 /******************************************
 	Context initialization

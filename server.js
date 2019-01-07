@@ -33,7 +33,6 @@ app.use(bodyParser.json()); // for parsing application/json
 app.all('/', (request, response, next) => {
 	console.log(request.method + ' /, params: ', request.body);
 	response.sendFile(path.join(__dirname + '/help.html'));
-	next();
 });
 
 /*
@@ -109,7 +108,7 @@ app.get('/block/:blockHeight', async (request, response) => {
 	}
 
 	// Try to get the block from the database
-	const block = await myBlockChain.getBlock(blockHeight);
+	const block = await myBlockChain.getBlock(parseInt(blockHeight));
 	if (!block) {
 		return formatErrorResponse(response, 402,
 			'Database error. Could not fetch block data.');
