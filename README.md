@@ -1,5 +1,5 @@
 
-# Project #2. RESTful Web API with Node.js Framework
+# Project #3. RESTful Web API with Node.js Framework
 
 This is Project 3, RESTful Web API with Node.js Framework, in this project I created a web api to allow my private blockchain functionalities to can be consumed by several types of web clients.
 
