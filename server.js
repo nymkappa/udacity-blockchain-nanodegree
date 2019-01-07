@@ -17,6 +17,7 @@ let myBlockChain = null; // Will be initialized later in the code
 
 const express = require('express');
 const bodyParser = require('body-parser');
+var path = require("path");
 
 let lastResponse = null;
 const port = 8000;
@@ -24,18 +25,20 @@ const app = express();
 app.use(bodyParser.json()); // for parsing application/json
 
 /*
-* GET /
-* 
+* GET/POST /
+*
 * Default route, display documentation/help
 * @response string - Documentation as html format
 */
-app.get('/', (request, response) => {
-	response.send('hello world');
+app.all('/', (request, response, next) => {
+	console.log(request.method + ' /, params: ', request.body);
+	response.sendFile(path.join(__dirname + '/help.html'));
+	next();
 });
- 
+
 /*
 * POST /block/
-* 
+*
 * Post a new block
 * @param string body - Block body data
 * @response string - Newly added block data as JSON string
@@ -44,7 +47,7 @@ app.get('/', (request, response) => {
 * @error 402 - Database error
 */
 app.post('/block/', async (request, response) => {
-	console.log('POST /block/, params: ', request.body);
+	console.log(request.method + ' /block/, params: ', request.body);
 
 	// Check if POST data are correct
 	if (!request.body.hasOwnProperty('body')) {
@@ -57,7 +60,7 @@ app.post('/block/', async (request, response) => {
 		request.body.body instanceof String))
 	{
 		return formatErrorResponse(response, 401,
-			'Body parameter must be a string.');	
+			'Body parameter must be a string.');
 	}
 
 	let block = new Block.Block(request.body.body);
@@ -70,10 +73,10 @@ app.post('/block/', async (request, response) => {
 
 	response.status(200).json(block);
 });
- 
+
 /*
 * /block/:blockHeight
-* 
+*
 * Get block data
 * @param integer blockHeight
 * @response string - Block data as a JSON string
@@ -83,7 +86,7 @@ app.post('/block/', async (request, response) => {
 * @error 402 - Database error
 */
 app.get('/block/:blockHeight', async (request, response) => {
-	console.log('GET /block/:blockHeight, params: ', request.params);
+	console.log(request.method + ' /block/:blockHeight, params: ', request.params);
 
 	// This should never happen
 	if (!request.params.hasOwnProperty('blockHeight')) {
@@ -111,7 +114,7 @@ app.get('/block/:blockHeight', async (request, response) => {
 		return formatErrorResponse(response, 402,
 			'Database error. Could not fetch block data.');
 	}
-	
+
 	// Return block data
 	response.status(200).json(block);
 });

@@ -8,8 +8,9 @@ This is Project 2, Private Blockchain, in this project I created the classes to 
 To setup the project for review do the following:
 1. Download the project.
 2. Run command __npm install__ to install the project dependencies.
-3. Run command __node simpleChain.js__ in the root directory.
-5. Tests result will be printed in the terminal
+3. Run command __node simpleChain.js__ in the root directory to generate dummy data in the blockchain.
+4. Run command __node server.js__ in the root directory to start the web server.
+5. Open __http://localhost:8000/__ and read the instructions.
 
 ## Testing the project
 
@@ -25,7 +26,7 @@ But default, the following tests will be executed (in order):
 1. Create 10 blocks with random data (if your `chaindata` folder is empty, it should also create the genesis block)
 2. Validate 3 random blocks
 3. Validate the chain
-4. Tamper the chain:
+4. Tamper the chain
 5. Validate 3 random blocks (you may have errors displayed at this point, except if you are unlucky with the random seed)
 6. Validate the chain (you must have errors displayed at this point)
 7. Print the whole chain in the terminal
