@@ -118,6 +118,40 @@ app.get('/block/:blockHeight', async (request, response) => {
 	response.status(200).json(block);
 });
 
+/*
+* POST /requestValidation/
+*
+* Register a new user with its wallet address
+* @param string walletAddress
+* @response string - Mempool entry as JSON string containing
+* the wallet address, the request timestamp, the message to sign
+* and the validation window (in seconds)
+*
+* @error 400 - Invalid request data
+* @error 401 - Address is not valid
+* @error 403 - User is already registered
+*/
+app.post('/block/', async (request, response) => {
+	console.log(request.method + ' /block/, params: ', request.body);
+
+	// Check if POST data are correct
+	if (!request.body.hasOwnProperty('address')) {
+		return formatErrorResponse(response, 400,
+			'Address parameter is missing.');
+	}
+
+	// Check format
+	if (!(typeof request.body.address === 'string' ||
+		request.body.address instanceof String))
+	{
+		return formatErrorResponse(response, 401,
+			'Address parameter must be a string.');
+	}
+
+
+	response.status(200).json(block);
+});
+
 /******************************************
 	Utils
 ******************************************/
