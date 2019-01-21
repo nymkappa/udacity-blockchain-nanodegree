@@ -6,10 +6,13 @@
 	Initialize blockchain context
 ******************************************/
 
-const BlockChain = require('./BlockChain.js');
-const Block = require('./Block.js');
+const Mempool = require('./mempool')
+const BlockChain = require('./BlockChain');
+const Block = require('./Block');
 
-let myBlockChain = null; // Will be initialized later in the code
+// Will be initialized later in the code
+let mempool = null;
+let myBlockChain = null;
 
 /******************************************
 	Server setup
@@ -42,15 +45,16 @@ app.all('/', (request, response, next) => {
 * @param string body - Block body data
 * @response string - Newly added block data as JSON string
 *
-* @error 400 - Invalid block data
-* @error 402 - Database error
+* @error 4000 - Invalid block data
+* @error 4001 - Invalid block data
+* @error 4002 - Database error
 */
 app.post('/block/', async (request, response) => {
 	console.log(request.method + ' /block/, params: ', request.body);
 
 	// Check if POST data are correct
 	if (!request.body.hasOwnProperty('body')) {
-		return formatErrorResponse(response, 400,
+		return formatErrorResponse(response, 4000,
 			'Body parameter is missing.');
 	}
 
@@ -58,7 +62,7 @@ app.post('/block/', async (request, response) => {
 	if (!(typeof request.body.body === 'string' ||
 		request.body.body instanceof String))
 	{
-		return formatErrorResponse(response, 401,
+		return formatErrorResponse(response, 4001,
 			'Body parameter must be a string.');
 	}
 
@@ -66,7 +70,7 @@ app.post('/block/', async (request, response) => {
 	block = await myBlockChain.addBlock(block);
 
 	if (!block) {
-		return formatErrorResponse(response, 402,
+		return formatErrorResponse(response, 4002,
 			'Database error. Could not add block.');
 	}
 
@@ -80,16 +84,16 @@ app.post('/block/', async (request, response) => {
 * @param integer blockHeight
 * @response string - Block data as a JSON string
 *
-* @error 400 - Invalid query
-* @error 401 - Invalid block height
-* @error 402 - Database error
+* @error 4000 - Invalid query
+* @error 4001 - Invalid block height
+* @error 4002 - Database error
 */
 app.get('/block/:blockHeight', async (request, response) => {
 	console.log(request.method + ' /block/:blockHeight, params: ', request.params);
 
 	// This should never happen
 	if (!request.params.hasOwnProperty('blockHeight')) {
-		return formatErrorResponse(response, 400,
+		return formatErrorResponse(response, 4000,
 			'Block height parameter is missing.');
 	}
 
@@ -103,14 +107,14 @@ app.get('/block/:blockHeight', async (request, response) => {
 		// Check if it's in range
 		blockHeight < 1 || blockHeight > chainHeight)
 	{
-		return formatErrorResponse(response, 401,
+		return formatErrorResponse(response, 4001,
 			'Invalid block height. It must be an integer between 1 and ' + chainHeight + '.');
 	}
 
 	// Try to get the block from the database
 	const block = await myBlockChain.getBlock(parseInt(blockHeight));
 	if (!block) {
-		return formatErrorResponse(response, 402,
+		return formatErrorResponse(response, 4002,
 			'Database error. Could not fetch block data.');
 	}
 
@@ -122,21 +126,21 @@ app.get('/block/:blockHeight', async (request, response) => {
 * POST /requestValidation/
 *
 * Register a new user with its wallet address
-* @param string walletAddress
+* @param string address
 * @response string - Mempool entry as JSON string containing
 * the wallet address, the request timestamp, the message to sign
 * and the validation window (in seconds)
 *
-* @error 400 - Invalid request data
-* @error 401 - Address is not valid
-* @error 403 - User is already registered
+* @error 4000 - Invalid request data
+* @error 4001 - Address is not valid
+* @error 4004 - Validation request has expired
 */
-app.post('/block/', async (request, response) => {
-	console.log(request.method + ' /block/, params: ', request.body);
+app.post('/requestValidation/', async (request, response) => {
+	console.log(request.method + ' /requestValidation/, params: ', request.body);
 
 	// Check if POST data are correct
 	if (!request.body.hasOwnProperty('address')) {
-		return formatErrorResponse(response, 400,
+		return formatErrorResponse(response, 4000,
 			'Address parameter is missing.');
 	}
 
@@ -144,12 +148,18 @@ app.post('/block/', async (request, response) => {
 	if (!(typeof request.body.address === 'string' ||
 		request.body.address instanceof String))
 	{
-		return formatErrorResponse(response, 401,
+		return formatErrorResponse(response, 4001,
 			'Address parameter must be a string.');
 	}
 
+	// Add the address in the mempool
+	try {
+		var res = mempool.add(request.body.address);
+	} catch (err) {
+		return formatErrorResponse(response, 4004, err);
+	}
 
-	response.status(200).json(block);
+	response.status(200).json(res);
 });
 
 /******************************************
@@ -159,7 +169,7 @@ app.post('/block/', async (request, response) => {
 function formatErrorResponse(response, code, message) {
 	lastResponse = { 'error': message };
 	console.log("RESPONSE: ", lastResponse);
-	response.status(code).json(lastResponse);
+	response.status(400).json(lastResponse);
 }
 
 function isInt(n) {
@@ -170,6 +180,9 @@ function isInt(n) {
 	Initialize the blockchain and
 	run the server
 ******************************************/
+
+//-- Initialize the mempool
+mempool = new Mempool.Mempool();
 
 // -- Initialize blockchain data from leveldb
 myBlockChain = new BlockChain.Blockchain();
