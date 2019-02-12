@@ -4,13 +4,21 @@
 
 This is Project 4, Private Blockchain Notary Service with Node.js Framework, in this project I created a web api to allow user to notarize stars.
 
-## Setup project for Review.
+## Setup project for Review
 
 To setup the project for review do the following:
 1. Download the project.
 2. Run command __npm install__ to install the project dependencies.
 3. Run command __node server.js__ in the root directory to start the web server.
 4. Open __http://localhost:8000/__ and read the instructions.
+
+## How to register a star
+
+1. Request authentication using `/requestValidation`. You will get a 30 seconds window to sign the provided message. 
+2. Sign the recieved message using your Bitcoin wallet.
+3. Validate it using `/message-signature/validate/`, within the `validationWindow` (in seconds).
+4. Register a star using the POST request `/block`
+5. Explore the blockchain using GET `/block`, `/star/hash:hash`, `/star/address:address`
 
 ## API Endpoints
 
