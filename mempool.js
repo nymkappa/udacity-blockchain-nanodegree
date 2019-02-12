@@ -51,7 +51,7 @@ class Mempool
 	 */
 	remove(walletAddress) {
 		if (this.pool[walletAddress]) {
-			delete this.pool.address;
+			delete this.pool[walletAddress];
 		}
 	}
 

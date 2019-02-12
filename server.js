@@ -210,7 +210,7 @@ app.post('/message-signature/validate/', async (request, response) => {
 /*
 * POST /block
 *
-* Register a start
+* Register a star
 * @param string address
 * @param JSON star
 * @response string - Newly added block
@@ -284,6 +284,9 @@ app.post('/block', async (request, response) => {
 	let block = new Block.Block(request.body);
 	block = await myBlockChain.addBlock(block);
 
+	// Remove user access
+	mempool.remove(request.body.address);
+
 	if (!block) {
 		return formatErrorResponse(response, 4002,
 			'Database error. Could not add block.');
@@ -302,8 +305,8 @@ app.post('/block', async (request, response) => {
 * @error 4000 - Invalid request data
 * @error 4007 - Hash not found
 */
-app.get('/star/hash:hash', async (request, response) => {
-	console.log(request.method + ' /star/hash:hash, params: ', request.params);
+app.get('/stars/hash:hash', async (request, response) => {
+	console.log(request.method + ' /stars/hash:hash, params: ', request.params);
 
 	request.params.hash = request.params.hash.substring(1);
 
@@ -340,8 +343,8 @@ app.get('/star/hash:hash', async (request, response) => {
 * @error 4000 - Invalid request data
 * @error 4008 - Address not found
 */
-app.get('/star/address:address', async (request, response) => {
-	console.log(request.method + ' /star/address:address, params: ', request.params);
+app.get('/stars/address:address', async (request, response) => {
+	console.log(request.method + ' /stars/address:address, params: ', request.params);
 
 	request.params.address = request.params.address.substring(1);
 

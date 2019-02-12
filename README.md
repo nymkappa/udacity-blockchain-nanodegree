@@ -18,7 +18,7 @@ To setup the project for review do the following:
 2. Sign the recieved message using your Bitcoin wallet.
 3. Validate it using `/message-signature/validate/`, within the `validationWindow` (in seconds).
 4. Register a star using the POST request `/block`
-5. Explore the blockchain using GET `/block`, `/star/hash:hash`, `/star/address:address`
+5. Explore the blockchain using GET `/block`, `/stars/hash:hash`, `/stars/address:address`
 
 ## API Endpoints
 
@@ -147,11 +147,11 @@ To setup the project for review do the following:
 </ul>
 
 
-<h3><span style="color: #ff6600; background-color: #000000;">GET /star/hash:[hash]</span></h3>
+<h3><span style="color: #ff6600; background-color: #000000;">GET /stars/hash:[hash]</span></h3>
 <p>Get star data block by its hash.</p>
 <p><span style="color: #008080;"><strong>Params:</strong></span></p>
 
-    http://localhost:8000/star/hash:439082c7a281ac977dbb04472bf092f236fee8d8e30752a9b52e475524a4f90d
+    http://localhost:8000/stars/hash:439082c7a281ac977dbb04472bf092f236fee8d8e30752a9b52e475524a4f90d
 
 <p><span style="color: #339966;"><strong>Response:</strong></span></p>
 
@@ -178,11 +178,11 @@ To setup the project for review do the following:
 </ul>
 
 
-<h3><span style="color: #ff6600; background-color: #000000;">GET /star/address:[address]</span></h3>
+<h3><span style="color: #ff6600; background-color: #000000;">GET /stars/address:[address]</span></h3>
 <p>Get stars datas blocks by owned by an address.</p>
 <p><span style="color: #008080;"><strong>Params:</strong></span></p>
 
-    http://localhost:8000/star/address:1NmmXeaFg8ywcsGYvd156s38oeNRx2wMRW
+    http://localhost:8000/stars/address:1NmmXeaFg8ywcsGYvd156s38oeNRx2wMRW
 
 <p><span style="color: #339966;"><strong>Response:</strong></span></p>
 
