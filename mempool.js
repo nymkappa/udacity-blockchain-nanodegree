@@ -5,8 +5,10 @@ class Mempool
 	 * Constructor
 	 */
 	constructor() {
-		this.ENABLE_DUMP = false;
-		this.VALIDATION_WINDOW = 300; // seconds
+		this.ENABLE_DUMP = true;
+		this.VALIDATION_WINDOW = 30; // seconds
+		this.ACCESS_WINDOW = 1800; // seconds
+
 	    this.pool = {};
 	};
 
@@ -16,23 +18,23 @@ class Mempool
 	 * @param string walletAddress
 	 * @return Object - The pool entry or NULL if walletAddress is not valid
 	 */
-	add(address) {
-		// Make sure the address does not already exists
+	add(walletAddress) {
+		// Make sure the walletAddress does not already exists
 		// in the pool
-		if (this.pool.hasOwnProperty(address)) {
+		if (this.pool[walletAddress]) {
 			// It already exists, so we will just update it
-			return this._update(address, true);
+			return this._update(walletAddress, true);
 		}
 
 		// Create the new pool entry
 		let timestamp = new Date().getTime();
 		let entry = {
-			'address'			: address,
+			'address'			: walletAddress,
 			'requestTimeStamp'	: timestamp,
-			'message'			: address + '-' + timestamp + '-starRegistry',
+			'message'			: walletAddress + ':' + timestamp + ':starRegistry',
 			'validationWindow'	: this.VALIDATION_WINDOW, // seconds
 		};
-		this.pool[address] = entry;
+		this.pool[walletAddress] = entry;
 
 		// Print the mempool state
 		this._dump();
@@ -48,14 +50,73 @@ class Mempool
 	 * @return Bool - False if the address was not found, true otherwise
 	 */
 	remove(walletAddress) {
-		// Get the entry index if it exists
-		let idx = this.pool.indexOf(walletAddress);
-		if (idx < 0) {
-			return false;
+		if (this.pool[walletAddress]) {
+			delete this.pool.address;
+		}
+	}
+
+	/**
+	 * Check if a wallet address is in the mempool
+	 *
+	 * @param string walletAddress
+	 * @return Object - The pool entry or NULL if walletAddress is not valid
+	 */
+	exists(walletAddress) {
+		if (this.pool[walletAddress]) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Get a mempool entry
+	 *
+	 * @param string walletAddress
+	 * @return Object - The pool entry or NULL if walletAddress is not valid
+	 */
+	get(walletAddress) {
+		if (this.pool[walletAddress]) {
+			return this.pool[walletAddress];
+		}
+		return null;
+	}
+	/**
+	 * When an validation request is validated, the address
+	 * is granted 30 minutes of access
+	 *
+	 * @param string walletAddress
+	 * @return Object - The pool entry or NULL if walletAddress is not valid
+	 */
+	validate(walletAddress) {
+		// Make sure the address exists in the pool
+		if (!this.pool[walletAddress]) {
+			return null;
 		}
 
-		// Remove the entry!
-		this.pool.splice(idx, 1);
+		// Check if the address already has access, if so, update
+		// the timestamp
+		if (this.pool[walletAddress].registerStar === true) {
+			return this._update(walletAddress, true);
+		}
+
+		// Update the mempool entry
+		let timestamp = new Date().getTime();
+		this.pool[walletAddress] = {
+			'registerStar' : true,
+			'status'	   : {
+				'address' 		   : walletAddress,
+				'requestTimeStamp' : this.pool[walletAddress].requestTimeStamp,
+				'message'		   : walletAddress + ':' + this.pool[walletAddress].requestTimeStamp + ':starRegistry',
+				'validationWindow' : this.ACCESS_WINDOW,
+				'messageSignature' : true,
+			}
+		}
+
+		// Print the mempool state
+		this._dump();
+
+		// Success
+		return this._update(walletAddress, true);
 	}
 
 	/**
@@ -67,25 +128,27 @@ class Mempool
 	 */
 	_update(walletAddress, bSkipExists = false) {
 		// Make sure the address exists in the pool
-		if (!bSkipExists && !this.pool.hasProperty(address)) {
+		if (!bSkipExists && !this.pool[walletAddress]) {
 			return null;
 		}
 
 		let entry = this.pool[walletAddress];
-		if (!entry) {
-			return null;
-		}
-
 		let currentTimestamp = new Date().getTime();
-		let diff = currentTimestamp - entry.requestTimeStamp;
 
 		// Update the validationWindow
-		entry.validationWindow = this.VALIDATION_WINDOW - diff * 0.001;
+		if (entry.registerStar) {
+			let diff = currentTimestamp - entry.status.requestTimeStamp;
+			entry.status.validationWindow = this.ACCESS_WINDOW - diff * 0.001;
+		} else {
+			let diff = currentTimestamp - entry.requestTimeStamp;
+			entry.validationWindow = this.VALIDATION_WINDOW - diff * 0.001;
+		}
 
 		// The entry expired
-		if (entry.validationWindow <= 0) {
+		if ((entry.registerStar && entry.status.validationWindow <= 0) ||
+			entry.validationWindow <= 0) {
 			delete this.pool[walletAddress];
-			throw "Registration expired, please try again";
+			throw "Registration/Access expired, please try again";
 		}
 
 		// Print the mempool state

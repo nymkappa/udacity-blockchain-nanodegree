@@ -144,6 +144,55 @@ class Blockchain
     }
 
     /**
+     * Get Block By Hash
+     *
+     * @param String hash
+     * @return Promise of a Block
+     */
+    async getBlockByHash(hash) {
+        try {
+            const block = new Block.Block('');
+            const json = await this.bd.getByHash(hash);
+            if (!json) {
+                return null;
+            }
+
+            block.createFromJSON(json);
+            return block;
+        }
+        catch (err) {
+            console.log("Blockchain::getBlockByHash", err);
+        }
+    }
+
+    /**
+     * Get Blocks By Address
+     *
+     * @param String address
+     * @return Promise of a Block array
+     */
+    async getBlocksByAddress(address) {
+        try {
+            const jsons = await this.bd.getByAddress(address);
+            if (jsons.length <= 0) {
+                return [];
+            }
+
+            let blocks = []
+            for (let i = 0; i < jsons.length; ++i) {
+                const block = new Block.Block('');
+                block.createFromJSON(jsons[i]);
+                blocks.splice(i, 0, block);
+            }
+
+            return blocks;
+        }
+        catch (err) {
+            console.log("Blockchain::getBlocksByAddress", err);
+        }
+    }
+
+    /**
      * Validate if Block is being tampered by Block Height
      *
      * @param Interger height

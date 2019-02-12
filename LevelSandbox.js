@@ -11,7 +11,7 @@ class LevelSandbox
     }
 
     /**
-     * Return the all [key, value] pairs from the db
+     * Return all [key, value] pairs from the db
      *
      * @return Promise of an array of data
      */
@@ -30,6 +30,58 @@ class LevelSandbox
             })
             .on('close', function () {
                 resolve(chain);
+            })
+        });
+    }
+
+    /**
+     * Return the [key, value] pairs where value.hash matches
+     *
+     * @return Promise of an object
+     */
+    getByHash(hash) {
+        let self = this;
+
+        return new Promise(function(resolve, reject) {
+            self.db.createReadStream()
+            .on('data', function (data) {
+                console.log(data.value);
+                if (data.value.indexOf('"hash":"' + hash + '"') !== -1) {
+                    resolve(data.value);
+                }
+            })
+            .on('error', function (err) {
+                reject("LevelSandbox::getAllDBData error, " + err);
+            })
+            .on('close', function () {
+                resolve(null);
+            })
+        });
+    }
+
+    /**
+     * Return all [key, value] pairs where value.address matches
+     *
+     * @return Promise of an object
+     */
+    getByAddress(address) {
+        let self = this;
+
+        return new Promise(function(resolve, reject) {
+            let matches = [];
+
+            self.db.createReadStream()
+            .on('data', function (data) {
+                console.log(data.value);
+                if (data.value.indexOf('"address":"' + address + '"') !== -1) {
+                    matches.splice(data.key, 0, data.value);
+                }
+            })
+            .on('error', function (err) {
+                reject("LevelSandbox::getAllDBData error, " + err);
+            })
+            .on('close', function () {
+                resolve(matches);
             })
         });
     }
