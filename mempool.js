@@ -6,7 +6,7 @@ class Mempool
 	 */
 	constructor() {
 		this.ENABLE_DUMP = true;
-		this.VALIDATION_WINDOW = 30; // seconds
+		this.VALIDATION_WINDOW = 300; // seconds
 		this.ACCESS_WINDOW = 1800; // seconds
 
 	    this.pool = {};
