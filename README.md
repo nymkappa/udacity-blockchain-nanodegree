@@ -14,10 +14,10 @@ To setup the project for review do the following:
 
 ## How to register a star
 
-1. Request authentication using `/requestValidation`. You will get a 30 seconds window to sign the provided message. 
+1. Request authentication using `/requestValidation`. You will get a 5 minutes window to sign the provided message. 
 2. Sign the recieved message using your Bitcoin wallet.
 3. Validate it using `/message-signature/validate/`, within the `validationWindow` (in seconds).
-4. Register a star using the POST request `/block`
+4. Register a star using the POST request `/block` within 30 minutes.
 5. Explore the blockchain using GET `/block`, `/star/hash:hash`, `/star/address:address`
 
 ## API Endpoints
