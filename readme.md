@@ -2,7 +2,7 @@
 
 * ERC721 Token Name: JorisDStar
 * ERC721 Token Symbol: JDS
-* ERC721 Rinkeby Contract Address: https://rinkeby.etherscan.io/address/0x3387b6b0e885b59acb22a52a907d573a8013db31
+* ERC721 Rinkeby Contract Address: https://rinkeby.etherscan.io/address/0xe76E6620BfF673ca7f50c0D9e2c2CBEC4f911E9a
 
 ## Requirements
 1. Truffle v5.0.7 (core: 5.0.7)
