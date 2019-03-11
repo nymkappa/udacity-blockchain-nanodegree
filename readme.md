@@ -6,7 +6,7 @@
 
 ## Requirements
 1. Truffle v5.0.7 (core: 5.0.7)
-2. Oopenzeppelin Solidity v2.1.2
+2. Openzeppelin Solidity v2.1.3
 3. Solidity v0.5.0 (solc-js)
 4. Node v8.10.0
 
