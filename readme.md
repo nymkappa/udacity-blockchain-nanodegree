@@ -2,7 +2,7 @@
 
 * ERC721 Token Name: JorisDStar
 * ERC721 Token Symbol: JDS
-* ERC721 Rinkeby Contract Address: https://rinkeby.etherscan.io/address/0x665873da54bfe70e2a648ca8c7c727e49d313508
+* ERC721 Rinkeby Contract Address: https://rinkeby.etherscan.io/address/0xc16AeE317c61d271Ea272a5aaBbA109aB27323Ca
 
 ## Requirements
 1. Truffle v5.0.7 (core: 5.0.7)
@@ -17,7 +17,7 @@ To setup the project for review do the following:
 2. Run command __npm install__ to install the project dependencies.
 3. Run command __npm install__ in the __./app__ directory.
 4. Run command __truffle develop__ in the root directory.
-5. In the truffle console, type __compile__ then __migrate --reset__. Note that the contract is already deployed on the Rinkeby network.
+5. In the truffle console, type __compile__ then __migrate --reset --network rinkeby__.
 4. Run command __npm run dev__ in __./app__ directory to start the web server.
 6. Open __http://localhost:8080/__ to open the DApp UI.
 
