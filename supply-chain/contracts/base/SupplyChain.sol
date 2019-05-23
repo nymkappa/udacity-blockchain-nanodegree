@@ -9,14 +9,13 @@ import '../core/Ownable.sol';
 import '../access_control/ArtistRole.sol';
 import '../access_control/LabelRole.sol';
 import '../access_control/PublisherRole.sol';
-import '../access_control/ListenerRole.sol';
 
 //-----------------------------------------------------------------------------
 
 /**
  * The main contract for our music supply chain
  */
-contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole, ListenerRole {
+contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole {
 
     //-------------------------------------------------------------------------
 
@@ -24,6 +23,7 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole, ListenerR
      * Tracks
      */
     mapping (uint => Track) tracks;
+    uint256 lastTrackId;
 
     /**
      * Save the track history
@@ -85,6 +85,16 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole, ListenerR
     event Purchased(uint trackId);
     event Removed(uint trackId);
 
+    //-------------------------------------------------------------------------
+
+    /**
+     * Contructor. By default, the creator of SupplyChain contract will have
+     * all roles.
+     */
+    constructor() public {
+        lastTrackId = 0;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // PUBLIC METHODS
     ///////////////////////////////////////////////////////////////////////////
@@ -98,12 +108,12 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole, ListenerR
         string memory _labelInfo,
         string memory _labelName,
         string memory _labelAddress
-    ) public onlyLabel {
+    ) public onlyLabel returns (uint256 trackId) {
 
         log3("test", "test1", "test2", "test3");
 
         // Create a new track instance
-        uint256 trackId = 42;
+        trackId = ++lastTrackId;
 
         Track storage track = tracks[trackId];
 
@@ -206,7 +216,7 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole, ListenerR
         string memory _publisherName,
         string memory _publisherInfo,
         string memory _publisherAddress
-    ) isState(_trackId, State.produced) onlyPublisher public {
+    ) isState(_trackId, State.promoted) onlyPublisher public {
 
         Track storage track = tracks[_trackId];
         track.state = State.published;
@@ -228,7 +238,7 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole, ListenerR
      */
     function buyTrack(
         uint256 _trackId
-    ) isState(_trackId, State.published) onlyListener public {
+    ) isState(_trackId, State.published) public {
 
         Track storage track = tracks[_trackId];
         track.buyCount++;
