@@ -137,7 +137,7 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole {
     //-------------------------------------------------------------------------
 
     /**
-     * Anyone can accept a track contract
+     * Artist can accept a track contract
      */
     function acceptTrackContract(
         uint256 _trackId,
@@ -164,18 +164,17 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole {
     //-------------------------------------------------------------------------
 
     /**
-     * When the artist is done making the track, he can set the label
-     * as the new owner of the track
+     * When the artist is done making the track, he update the track state
+     * so the label can start promotion
      */
     function produceTrack(
         uint256 _trackId,
         string memory _notes
-    ) isTrackArtist(_trackId) isState(_trackId, State.accepted) onlyArtist public {
+    ) trackOwnerOnly(_trackId) isTrackArtist(_trackId)
+      isState(_trackId, State.accepted) onlyArtist  public {
 
         Track storage track = tracks[_trackId];
         track.state = State.produced;
-        track.owner = msg.sender;
-
         track.notes = _notes;
 
         _addHistory('trackDataTODO', 'txInfoTODO');
@@ -275,11 +274,20 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole {
     /**
      * Check if there is not already an assigned artist
      */
-
     modifier hasNoArtist(uint256 _trackId) {
 
         Track storage track = tracks[_trackId];
         require(uint256(track.artist.ethAddress) == 0);
+        _;
+    }
+
+    /**
+     * Only the owner of the track can call this code
+     */
+    modifier trackOwnerOnly(uint256 _trackId) {
+
+        Track storage track = tracks[_trackId];
+        require(uint256(track.owner) == uint256(msg.sender));
         _;
     }
 
@@ -322,7 +330,23 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole {
     //-------------------------------------------------------------------------
 
     /**
-     * Get track artists
+     * Get track publisher
+     */
+    function getTrackPublisher(uint256 _trackId) public view
+        returns(address publisher, string memory publisherName,
+            string memory publisherInfo, string memory publisherAddress) {
+
+        Track storage track = tracks[_trackId];
+        publisher = track.publisher.ethAddress;
+        publisherName = track.publisher.name;
+        publisherInfo = track.publisher.info;
+        publisherAddress = track.publisher.postAddress;
+    }
+
+    //-------------------------------------------------------------------------
+
+    /**
+     * Get track artist
      */
     function getTrackArtist(uint256 _trackId) public view
         returns(address artist, string memory artistName,
