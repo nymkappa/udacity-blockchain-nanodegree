@@ -2,6 +2,8 @@
 
 This repository containts an Ethereum DApp that demonstrates a Supply Chain flow for a track in the music industry. The user story is similar to any commonly used supply chain process. A label can offer contracts and promote music, artists can accept contracts and produce tracks, publisher can publish a track, and listener can buy a track.
 
+***This is a work in progress and this project was made for learning purpose.***
+
 The DApp User Interface when running should look like...
 
 ![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture.PNG)
