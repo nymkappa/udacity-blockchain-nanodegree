@@ -1,0 +1,16 @@
+{
+  "name": "music-supply-chain",
+  "version": "1.0.0",
+  "description": "Basic music production supply chain created for Udacity Blockchain Nanodegree",
+  "main": "index.js",
+  "scripts": {
+    "dev": "lite-server",
+    "test": "truffle test"
+  },
+  "keywords": [],
+  "author": "Joris Vial <joris.vial@hotmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "lite-server": "2.4.0"
+  }
+}
