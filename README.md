@@ -2,6 +2,7 @@
 
 ***Contract has been deployed on Rinkeby network.***
 Transaction: https://rinkeby.etherscan.io/tx/0xfdad0422f12173f9f570146e7c4fdc4c0d4d0c8a96ce47017a7b961666c1dea1
+
 Contract address: https://rinkeby.etherscan.io/address/0x52a8088e650e5c9b0e78333d79b42947f162346c
 
 This repository containts an Ethereum DApp that demonstrates a Supply Chain flow for a track in the music industry. The user story is similar to any commonly used supply chain process. A label can offer contracts and promote music, artists can accept contracts and produce tracks, publisher can publish a track, and listener can buy a track.
