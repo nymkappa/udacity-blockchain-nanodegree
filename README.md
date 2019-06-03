@@ -18,11 +18,13 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Please make sure you've already installed ganache-cli, Truffle and enabled MetaMask extension in your browser.
+Install `ganache-cli` as well as MetaMask extension for your browser.
+```
+sudo npm install -g ganache-cli
+```
+Make sure MetaMask is connected to your local Ethereum network (through Ganache).
 
-```
-Give examples (to be clarified)
-```
+![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture5.PNG)
 
 ### Installing
 
@@ -31,25 +33,25 @@ A step by step series of examples that tell you have to get a development env ru
 Clone this repository:
 
 ```
-git clone https://github.com/udacity/nd1309/tree/master/course-5/project-6
+git clone https://github.com/jorisvial/udacity-blockchain-nanodegree.git
 ```
 
-Change directory to ```project-6``` folder and install all requisite npm packages (as listed in ```package.json```):
+Change directory to ```supply-chain``` folder and install all requisite npm packages (as listed in ```package.json```):
 
 ```
-cd project-6
+cd supply-chain
 npm install
 ```
 
 Launch Ganache:
 
 ```
-ganache-cli -m "spirit supply whale amount human item harsh scare congress discover talent hamster"
+ganache-cli -m "museum wrestle time describe rent enroll margin ceiling need filter paddle scrap"
 ```
 
 Your terminal should look something like this:
 
-![truffle test](images/ganache-cli.png)
+![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture6.PNG)
 
 In a separate terminal window, Compile smart contracts:
 
@@ -59,7 +61,7 @@ truffle compile
 
 Your terminal should look something like this:
 
-![truffle test](images/truffle_compile.png)
+![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture7.PNG)
 
 This will create the smart contract artifacts in folder ```build\contracts```.
 
@@ -71,7 +73,7 @@ truffle migrate
 
 Your terminal should look something like this:
 
-![truffle test](images/truffle_migrate.png)
+![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture7.PNG)
 
 Test smart contracts:
 
@@ -81,7 +83,7 @@ truffle test
 
 All 10 tests should pass.
 
-![truffle test](images/truffle_test.png)
+![truffle test](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture8.PNG)
 
 In a separate terminal window, launch the DApp:
 
@@ -89,21 +91,25 @@ In a separate terminal window, launch the DApp:
 npm run dev
 ```
 
+## Future improvemennt
+* Handle multiple publishers for 1 track
+* Allow different actors to withdraw funds from the contract according to their % of track ownership
+* Better UX
+
 ## Built With
 
 * [Ethereum](https://www.ethereum.org/) - Ethereum is a decentralized platform that runs smart contracts
-* [IPFS](https://ipfs.io/) - IPFS is the Distributed Web | A peer-to-peer hypermedia protocol
-to make the web faster, safer, and more open.
 * [Truffle Framework](http://truffleframework.com/) - Truffle is the most popular development framework for Ethereum with a mission to make your life a whole lot easier.
 
 
 ## Authors
 
-See also the list of [contributors](https://github.com/your/project/contributors.md) who participated in this project.
+* Udacity https://udacity.com/
+* Joris Vial
 
 ## Acknowledgments
 
 * Solidity
 * Ganache-cli
 * Truffle
-* IPFS
+* Udacity
