@@ -4,13 +4,13 @@ This repository containts an Ethereum DApp that demonstrates a Supply Chain flow
 
 The DApp User Interface when running should look like...
 
-![truffle test](images/CAPTURE.png)
+![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture.PNG)
 
-![truffle test](images/CAPTURE2.png)
+![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture2.PNG)
 
-![truffle test](images/CAPTURE3.png)
+![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture3.PNG)
 
-![truffle test](images/CAPTURE4.png)
+![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture4.PNG)
 
 ## Getting Started
 
