@@ -1,6 +1,12 @@
 # Supply chain & data auditing
 
+***Contract has been deployed on Rinkeby network.***
+* Transaction: https://rinkeby.etherscan.io/tx/0xfdad0422f12173f9f570146e7c4fdc4c0d4d0c8a96ce47017a7b961666c1dea1
+* Contract address: https://rinkeby.etherscan.io/address/0x52a8088e650e5c9b0e78333d79b42947f162346c
+
 This repository containts an Ethereum DApp that demonstrates a Supply Chain flow for a track in the music industry. The user story is similar to any commonly used supply chain process. A label can offer contracts and promote music, artists can accept contracts and produce tracks, publisher can publish a track, and listener can buy a track.
+
+***This is a work in progress and this project was made for learning purpose.***
 
 The DApp User Interface when running should look like...
 
@@ -73,7 +79,8 @@ truffle migrate
 
 Your terminal should look something like this:
 
-![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture7.PNG)
+![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture8.PNG)
+![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture9.PNG)
 
 Test smart contracts:
 
@@ -83,7 +90,7 @@ truffle test
 
 All 10 tests should pass.
 
-![truffle test](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture8.PNG)
+![truffle test](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture10.PNG)
 
 In a separate terminal window, launch the DApp:
 
@@ -93,8 +100,10 @@ npm run dev
 
 ## Future improvemennt
 * Handle multiple publishers for 1 track
+* Allow actors to register/renounce
 * Allow different actors to withdraw funds from the contract according to their % of track ownership
 * Better UX
+* Make the contract fully decentralized
 
 ## Built With
 
