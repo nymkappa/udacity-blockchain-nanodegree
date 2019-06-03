@@ -29,6 +29,7 @@ Install `ganache-cli` as well as MetaMask extension for your browser.
 sudo npm install -g ganache-cli
 ```
 Make sure MetaMask is connected to your local Ethereum network (through Ganache).
+![](images/Capture5.PNG)
 
 ```
 joris@DESKTOP-9TB023B:~/udacity/supply-chain$ node -v
@@ -38,8 +39,6 @@ v8.10.0
 joris@DESKTOP-9TB023B:~/udacity/supply-chain$ truffle --version
 Truffle v5.0.15 - a development framework for Ethereum
 ```
-
-![](images/Capture5.PNG)
 
 ### Installing
 
