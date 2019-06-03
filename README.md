@@ -1,17 +1,16 @@
 # Supply chain & data auditing
 
-This repository containts an Ethereum DApp that demonstrates a Supply Chain flow for a tracck in the music industry. The user story is similar to any commonly used supply chain process. A label can offer contracts and promote music, artists can accept contracts and produce tracks, publisher can publish a track, and listener can buy a track.
+This repository containts an Ethereum DApp that demonstrates a Supply Chain flow for a track in the music industry. The user story is similar to any commonly used supply chain process. A label can offer contracts and promote music, artists can accept contracts and produce tracks, publisher can publish a track, and listener can buy a track.
 
 The DApp User Interface when running should look like...
 
-![truffle test](images/ftc_product_overview.png)
+![truffle test](images/CAPTURE.png)
 
-![truffle test](images/ftc_farm_details.png)
+![truffle test](images/CAPTURE2.png)
 
-![truffle test](images/ftc_product_details.png)
+![truffle test](images/CAPTURE3.png)
 
-![truffle test](images/ftc_transaction_history.png)
-
+![truffle test](images/CAPTURE4.png)
 
 ## Getting Started
 
