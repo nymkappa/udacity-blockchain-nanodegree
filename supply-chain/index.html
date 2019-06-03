@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Production Supply Chain</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+</head>
+
+<body>
+<!--
+    Contract Owner: accounts[0]  0xbfCf495500ce0E822Cb42b41A74794f9a9A76641
+    Artist: accounts[1]  0xdE6B41EfF7FC7918a0D59a0e2d66270359F47Bdc
+    Label: accounts[2]  0x1a2D2169A48Bf2D5231877277A24b3f77f89A745
+    Publisher: accounts[3]  0x61D2F6AF741b168072F457B92CBA8c6d238A9f5F
+    Listener: accounts[4]  0xC6f169d1Aa52e40DE8B6D3784adadDFeF96b28aC
+    Listener2: accounts[5]  0xC33bF959d420A37846B08D37195C415873478362
+ -->
+    <!-- TITLE -->
+    <div class="container">
+        <h1 style="text-align: center;">Music Production Supply Chain</h1>
+        <hr>
+        <p style="text-align: center;">Track the life of a track through the music industry</p>
+    </div>
+
+    <!-- TRACK DATA -->
+    <div id="ftc-harvest">
+
+        <!-- OVERVIEW -->
+        <h2>Track Overview</h2>
+        <div class="form-group">
+            Track ID
+            <br><input class="input-field" type="number" id="trackId" name="trackId" value=1><br>
+            Current Owner ETH Address
+            <br><input type="text" id="ownerID" name="ownerID" value="0xbfCf495500ce0E822Cb42b41A74794f9a9A76641" size="50"><br>
+            <div class=button-div>
+                <button class="btn-fetchAll" id="button" type="button" data-id="track">Fetch Track Info</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            Track ID
+            <br><label id="info_trackId"></label><br>
+            Track Owner
+            <br><label id="info_trackOwner"></label><br>
+            Buy Count
+            <br><label id="info_buyCount"></label><br>
+            Notes
+            <br><label id="info_notes"></label><br>
+            Prices
+            <br><label id="info_prices"></label><br>
+            State
+            <br><label id="info_state"></label><br>
+        </div>
+        <div class="form-group">
+            Label
+            <br><label id="info_label"></label><br>
+            Name
+            <br><label id="info_labelName"></label><br>
+            Info
+            <br><label id="info_labelInfo"></label><br>
+            Address (post)
+            <br><label id="info_labelAddress"></label><br>
+        </div>
+        <div class="form-group">
+            Publisher
+            <br><label id="info_publisher"></label><br>
+            Name
+            <br><label id="info_publisherName"></label><br>
+            Info
+            <br><label id="info_publisherInfo"></label><br>
+            Address (post)
+            <br><label id="info_publisherAddress"></label><br>
+        </div>
+        <div class="form-group">
+            Artist
+            <br><label id="info_artist"></label><br>
+            Name
+            <br><label id="info_artistName"></label><br>
+            Info
+            <br><label id="info_artistInfo"></label><br>
+            Address (post)
+            <br><label id="info_artistAddress"></label><br>
+        </div>
+
+        <!-- LABEL -->
+        <h2>Label</h2>
+        <div class="form-group">
+            <!-- form -->
+            Label ETH Address
+            <br><input type="text" id="labelEth" name="labelEth" value="0x1a2D2169A48Bf2D5231877277A24b3f77f89A745" size="50"><br>
+            Label Name
+            <br><input type="text" id="labelName" name="labelName" value="Udacity Music"><br>
+            Label Information
+            <br><input type="text" id="labelInfo" name="labelInfo" value="Who's afraid of 138"><br>
+            Label Address
+            <br><input type="text" id="labelAddress" name="labelAddress" value="In a sky full of star"><br>
+            Notes
+            <br><input type="text" id="notesLabel" name="notesLabel" value="Your mission if you accept it, if to make a track"><br>
+            Price
+            <br><input type="text" id="price" name="price" value="1000000" readonly><br>
+
+            <!-- action -->
+            <button class="btn-offer" id="button" type="button" data-id="offer">Offer contract</button>
+            <button class="btn-promote" id="button" type="button" data-id="promote">Promote track</button>
+        </div>
+        <div class=form-break></div>
+
+        <!-- ARTIST -->
+        <h2>Artist</h2>
+        <div class="form-group">
+            <!-- form -->
+            Artist ETH Address
+            <br><input type="text" id="artistEth" name="artistEth" value="0xdE6B41EfF7FC7918a0D59a0e2d66270359F47Bdc" size="50"><br>
+            Artist Name
+            <br><input type="text" id="artistName" name="artistName" value="Joris Vial"><br>
+            Artist Information
+            <br><input type="text" id="artistInfo" name="artistInfo" value="Udacity music producer"><br>
+            Artist Address
+            <br><input type="text" id="artistAddress" name="artistAddress" value="Somewhere between 3k and 20k"><br>
+            Track Notes
+            <br><input type="text" id="notesArtist" name="notesArtist" value="The sun is shining"><br>
+
+            <!-- action -->
+            <button class="btn-accept" id="button" type="button" data-id="accept">Accept contract</button>
+            <button class="btn-produce" id="button" type="button" data-id="produce">Produce track</button>
+        </div>
+        <div class=form-break></div>
+
+        <!-- PUBLISHER -->
+        <h2>Publisher</h2>
+        <div class="form-group">
+            <!-- form -->
+            Publisher ETH Address
+            <br><input type="text" id="publisherEth" name="publisherEth" value="0x61D2F6AF741b168072F457B92CBA8c6d238A9f5F" size="50"><br>
+            Publisher Name
+            <br><input type="text" id="publisherName" name="publisherName" value="Deezer"><br>
+            Publisher Information
+            <br><input type="text" id="publisherInfo" name="publisherInfo" value="Deezer - A music company"><br>
+            Publisher Address
+            <br><input type="text" id="publisherAddress" name="publisherAddress" value="I guess it's in Europe"><br>
+
+            <!-- action -->
+            <button class="btn-publish" id="button" type="button" data-id="publish">Publish track</button>
+        </div>
+        <div class=form-break></div>
+
+        <!-- Anyone / Listener -->
+        <h2>Listener</h2>
+        <div class="form-group">
+            <!-- form -->
+
+            <!-- action -->
+            <button class="btn-buy" id="button" type="button" data-id="buy">Buy track</button>
+        </div>
+        <div class=form-break></div>
+
+        <hr>
+    </div>
+
+    <h2>Transaction History<span id="ftc-history"></span></h2>
+    <div>
+        <ul id="ftc-events">
+            <!-- Events will appear here from app.js -->
+        </ul>
+        <br>
+        <hr>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- <script src="js/web3.min.js"></script> -->
+    <script src="js/truffle-contract.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

@@ -304,9 +304,9 @@ contract('SupplyChain', function(accounts) {
         for (var i = 0; i < 2; ++i) {
         	let ret = null
         	if (0 === i) {
-	        	res = await supplyChain.buyTrack(1, {from: listener});
+	        	res = await supplyChain.buyTrack(1, {from: listener, value: 1});
 	        } else if (1 === i) {
-	        	res = await supplyChain.buyTrack(1, {from: listener2});
+	        	res = await supplyChain.buyTrack(1, {from: listener2, value: 1});
 	        }
 
 	        // Make sure the Purchased event was thrown

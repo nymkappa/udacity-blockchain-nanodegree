@@ -110,8 +110,6 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole {
         string memory _labelAddress
     ) public onlyLabel returns (uint256 trackId) {
 
-        log3("test", "test1", "test2", "test3");
-
         // Create a new track instance
         trackId = ++lastTrackId;
 
@@ -128,8 +126,6 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole {
         track.label.name = _labelName;
         track.label.info = _labelInfo;
         track.label.postAddress = _labelAddress;
-
-        _addHistory('trackDataTODO', 'txInfoTODO');
 
         emit Offered(track.id);
     }
@@ -156,8 +152,6 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole {
         track.artist.info = _artistInfo;
         track.artist.postAddress = _artistAddress;
 
-        _addHistory('trackDataTODO', 'txInfoTODO');
-
         emit Accepted(track.id);
     }
 
@@ -177,8 +171,6 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole {
         track.state = State.produced;
         track.notes = _notes;
 
-        _addHistory('trackDataTODO', 'txInfoTODO');
-
         emit Produced(track.id);
     }
 
@@ -194,8 +186,6 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole {
 
         Track storage track = tracks[_trackId];
         track.state = State.promoted;
-
-        _addHistory('trackDataTODO', 'txInfoTODO');
 
         emit Promoted(track.id);
     }
@@ -225,8 +215,6 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole {
         track.publisher.info = _publisherInfo;
         track.publisher.postAddress = _publisherAddress;
 
-        _addHistory('trackDataTODO', 'txInfoTODO');
-
         emit Published(track.id);
     }
 
@@ -237,12 +225,18 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole {
      */
     function buyTrack(
         uint256 _trackId
-    ) isState(_trackId, State.published) public {
+    ) isState(_trackId, State.published) payable public {
 
         Track storage track = tracks[_trackId];
-        track.buyCount++;
 
-        _addHistory('trackDataTODO', 'txInfoTODO');
+        // Check if he pays enough
+        require(track.price > 0);
+        require(msg.value >= track.price);
+
+        // TODO - Each track will have a balance, and each actor will be able
+        // to withdraw the % when they want to
+
+        track.buyCount++;
 
         emit Purchased(track.id);
     }
@@ -357,16 +351,5 @@ contract SupplyChain is Ownable, ArtistRole, LabelRole, PublisherRole {
         artistName = track.artist.name;
         artistInfo = track.artist.info;
         artistAddress = track.artist.postAddress;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // INTERNAL
-    ///////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Save the track history
-     */
-    function _addHistory(string memory track, string memory txInfo) internal {
-
     }
 }
