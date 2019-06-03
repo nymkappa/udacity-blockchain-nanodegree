@@ -10,13 +10,13 @@ This repository containts an Ethereum DApp that demonstrates a Supply Chain flow
 
 The DApp User Interface when running should look like...
 
-![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture.PNG)
+![](images/Capture.PNG)
 
-![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture2.PNG)
+![](images/Capture2.PNG)
 
-![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture3.PNG)
+![](images/Capture3.PNG)
 
-![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture4.PNG)
+![](images/Capture4.PNG)
 
 ## Getting Started
 
@@ -30,7 +30,7 @@ sudo npm install -g ganache-cli
 ```
 Make sure MetaMask is connected to your local Ethereum network (through Ganache).
 
-![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture5.PNG)
+![](images/Capture5.PNG)
 
 ### Installing
 
@@ -57,7 +57,7 @@ ganache-cli -m "museum wrestle time describe rent enroll margin ceiling need fil
 
 Your terminal should look something like this:
 
-![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture6.PNG)
+![](images/Capture6.PNG)
 
 In a separate terminal window, Compile smart contracts:
 
@@ -67,7 +67,7 @@ truffle compile
 
 Your terminal should look something like this:
 
-![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture7.PNG)
+![](images/Capture7.PNG)
 
 This will create the smart contract artifacts in folder ```build\contracts```.
 
@@ -79,8 +79,8 @@ truffle migrate
 
 Your terminal should look something like this:
 
-![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture8.PNG)
-![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture9.PNG)
+![](images/Capture8.PNG)
+![](images/Capture9.PNG)
 
 Test smart contracts:
 
@@ -90,7 +90,7 @@ truffle test
 
 All 10 tests should pass.
 
-![truffle test](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture10.PNG)
+![](images/Capture10.PNG)
 
 In a separate terminal window, launch the DApp:
 
