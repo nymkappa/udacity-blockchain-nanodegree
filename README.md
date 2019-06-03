@@ -98,6 +98,16 @@ In a separate terminal window, launch the DApp:
 npm run dev
 ```
 
+## How to use the Front-end
+* If you ran properly `ganache-cli` as explained earlier, everything is already setup
+* You can test the full process in the following order (the track info are updated automatically)
+  1) Label `Offer contract`
+  2) Artist `Accept contract`
+  3) Artits `Produce track`
+  4) Label `Promote track`
+  5) Publisher `Publish track`
+  6) Listener `Buy track`
+
 ## Future improvemennt
 * Handle multiple publishers for 1 track
 * Allow actors to register/renounce
