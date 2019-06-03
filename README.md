@@ -73,7 +73,8 @@ truffle migrate
 
 Your terminal should look something like this:
 
-![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture7.PNG)
+![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture8.PNG)
+![](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture9.PNG)
 
 Test smart contracts:
 
@@ -83,7 +84,7 @@ truffle test
 
 All 10 tests should pass.
 
-![truffle test](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture8.PNG)
+![truffle test](https://github.com/jorisvial/udacity-blockchain-nanodegree/blob/readme/images/Capture10.PNG)
 
 In a separate terminal window, launch the DApp:
 
