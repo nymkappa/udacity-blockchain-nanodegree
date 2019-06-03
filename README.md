@@ -94,8 +94,10 @@ npm run dev
 
 ## Future improvemennt
 * Handle multiple publishers for 1 track
+* Allow actors to register/renounce
 * Allow different actors to withdraw funds from the contract according to their % of track ownership
 * Better UX
+* Make the contract fully decentralized
 
 ## Built With
 
