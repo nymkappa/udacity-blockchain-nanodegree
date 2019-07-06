@@ -8,10 +8,12 @@ export default class Contract {
         let config = Config[network];
         this.web3 = new Web3(new Web3.providers.HttpProvider(config.url));
         this.flightSuretyApp = new this.web3.eth.Contract(FlightSuretyApp.abi, config.appAddress);
-        this.initialize(callback);
+
         this.owner = null;
         this.airlines = [];
         this.passengers = [];
+
+        this.initialize(callback);
     }
 
     initialize(callback) {
@@ -28,6 +30,9 @@ export default class Contract {
             while(this.passengers.length < 5) {
                 this.passengers.push(accts[counter++]);
             }
+
+            console.log(this.airlines)
+            console.log(this.passengers)
 
             callback();
         });
@@ -47,6 +52,9 @@ export default class Contract {
             flight: flight,
             timestamp: Math.floor(Date.now() / 1000)
         }
+
+        console.log('fetchFlightStatus', payload)
+
         self.flightSuretyApp.methods
             .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
             .send({ from: self.owner}, (error, result) => {

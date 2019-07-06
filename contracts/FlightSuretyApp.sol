@@ -150,7 +150,7 @@ contract FlightSuretyApp {
                         )
                         external
     {
-        uint8 index = getRandomIndex(msg.sender);
+        uint8 index = getRandomIndex(msg.sender, timestamp);
 
         // Generate a unique key for storing the request
         bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
@@ -227,7 +227,7 @@ contract FlightSuretyApp {
             indexes: indexes
         });
 
-        OracleRegistered(msg.sender, indexes[0], indexes[1], indexes[2]);
+        emit OracleRegistered(msg.sender, indexes[0], indexes[1], indexes[2]);
 
         return indexes;
     }
@@ -244,8 +244,12 @@ contract FlightSuretyApp {
     	uint256 timestamp, uint8 statusCode)
 		external
     {
-        require((oracles[msg.sender].indexes[0] == index) || (oracles[msg.sender].indexes[1] == index) || (oracles[msg.sender].indexes[2] == index), "Index does not match oracle request");
-
+        require(
+        	(oracles[msg.sender].indexes[0] == index) ||
+        	(oracles[msg.sender].indexes[1] == index) ||
+        	(oracles[msg.sender].indexes[2] == index),
+        	"Index does not match oracle request"
+        );
 
         bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
         require(oracleResponses[key].isOpen, "Flight or timestamp do not match oracle request");
@@ -287,16 +291,16 @@ contract FlightSuretyApp {
                             returns(uint8[3])
     {
         uint8[3] memory indexes;
-        indexes[0] = getRandomIndex(account);
+        indexes[0] = getRandomIndex(account, 0);
 
         indexes[1] = indexes[0];
         while(indexes[1] == indexes[0]) {
-            indexes[1] = getRandomIndex(account);
+            indexes[1] = getRandomIndex(account, 0);
         }
 
         indexes[2] = indexes[1];
         while((indexes[2] == indexes[0]) || (indexes[2] == indexes[1])) {
-            indexes[2] = getRandomIndex(account);
+            indexes[2] = getRandomIndex(account, 0);
         }
 
         return indexes;
@@ -305,7 +309,8 @@ contract FlightSuretyApp {
     // Returns array of three non-duplicating integers from 0-9
     function getRandomIndex
                             (
-                                address account
+                                address account,
+                                uint256 timestamp
                             )
                             internal
                             returns (uint8)
@@ -313,7 +318,9 @@ contract FlightSuretyApp {
         uint8 maxValue = 10;
 
         // Pseudo random number...the incrementing nonce adds variation
-        uint8 random = uint8(uint256(keccak256(abi.encodePacked(blockhash(block.number - nonce++), account))) % maxValue);
+        uint8 random = uint8(uint256(keccak256(abi.encodePacked(
+        	blockhash(block.number - nonce++), account, timestamp))) % maxValue
+        );
 
         if (nonce > 250) {
             nonce = 0;  // Can only fetch blockhashes for last 256 blocks so we adapt
