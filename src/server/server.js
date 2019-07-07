@@ -188,7 +188,7 @@ flightSuretyApp.events.FlightStatusInfo({
 			'flight:' + event.returnValues.flight,
 			'timestamp:' + event.returnValues.timestamp,
 			'status:' + event.returnValues.status,
-			"\n######################### /FlightStatusInfo #########################\n"
+			"\n######################### /FlightStatusInfo #########################"
 		)
 	}
 })
