@@ -235,6 +235,7 @@ contract FlightSuretyApp {
         emit OracleReport(airline, flight, timestamp, statusCode);
         if (oracleResponses[key].responses[statusCode].length >= MIN_RESPONSES) {
 
+        	oracleResponses[key].isOpen = false;
             emit FlightStatusInfo(airline, flight, timestamp, statusCode);
 
             // Handle flight status as appropriate

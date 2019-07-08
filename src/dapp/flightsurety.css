@@ -5,15 +5,20 @@ body {
 }
 
 .container {
-    margin-top: 400px;
-    background-color: #000;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    background-color: #000000AA;
     opacity: 0.9;
     color: #fff;
-    padding: 40px;
+    padding: 10px;
 }
 
-.top-20 {
-    margin-top: 20px;
+.first {
+    margin-top: 100px;
+}
+
+.row {
+	margin-left: 0;
 }
 
 h5 {
@@ -21,20 +26,37 @@ h5 {
 }
 
 section {
-    margin-bottom: 50px;
+    margin-bottom: 15px;
+}
+
+.div-border {
+    border: white;
+    border-style: inset;
 }
 
 .field {
     font-weight: bold;
+    color: white;
     text-align: right;
+}
+
+.topbottombar {
+    text-decoration: underline overline;
 }
 
 .field-value {
     color: #0e7fa8;
+    margin-left: 10px;
+    font-weight: bold;
+    font-size: large;
+}
+
+.small {
+    font-size: medium;
 }
 
 label.form {
-    font-size: 14px;
+    font-size: 20px;
     margin-right: 20px;
 }
 input {
