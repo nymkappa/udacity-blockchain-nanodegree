@@ -7,20 +7,22 @@ import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 /**
  * FlightSurety Smart Contract
  */
-contract FlightSuretyApp {
+contract FlightSuretyApp
+{
     using SafeMath for uint256; // Allow SafeMath functions to be called for all uint256 types (similar to "prototype" in Javascript)
+
+    address private contractOwner; // Account used to deploy contract
+    FlightSuretyData dataContract;
 
 	// ----------------------------------------------------------------------------
 
-    // Flight status codees
+    // Flight status codes
     uint8 private constant STATUS_CODE_UNKNOWN = 0;
     uint8 private constant STATUS_CODE_ON_TIME = 10;
     uint8 private constant STATUS_CODE_LATE_AIRLINE = 20;
     uint8 private constant STATUS_CODE_LATE_WEATHER = 30;
     uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
-
-    address private contractOwner; // Account used to deploy contract
 
 	// ----------------------------------------------------------------------------
 
@@ -63,10 +65,11 @@ contract FlightSuretyApp {
     /**
      * Constructor
      */
-    constructor()
+    constructor(address dataContractAddress)
     	public
     {
         contractOwner = msg.sender;
+        dataContract = FlightSuretyData(dataContractAddress);
     }
 
 	// ----------------------------------------------------------------------------
@@ -226,7 +229,7 @@ contract FlightSuretyApp {
         );
 
         bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
-        require(oracleResponses[key].isOpen, "Flight or timestamp do not match oracle request");
+        require(oracleResponses[key].isOpen, "Contract is not accepting Oracle response right now");
 
         oracleResponses[key].responses[statusCode].push(msg.sender);
 
@@ -304,5 +307,29 @@ contract FlightSuretyApp {
     }
 
 // endregion oracle
-
 }
+
+// region interface
+
+contract FlightSuretyData
+{
+    function setOperatingStatus(bool mode)
+    	public pure;
+
+    function registerAirline()
+        public pure;
+
+    function buy()
+    	public payable;
+
+    function creditInsurees()
+    	public pure;
+
+    function pay()
+    	public pure;
+
+    function fund()
+    	public payable;
+}
+
+// endregion interface
