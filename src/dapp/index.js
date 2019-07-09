@@ -19,6 +19,19 @@ let frontend = async () => {
     	$('#status').text(result === true ? "OPERATIONAL ✔" : "OFFLINE X")
     })
 
+    // ----------------------------------------------------------------------------
+
+    /**
+     * Check if the contract is operational
+     */
+    $('.navbar-brand').click((e) => {
+        $('.contentdiv').hide()
+        if ('flight' === e.currentTarget.id) {
+            $('#requestdiv').show()
+        } else if ('insurance' === e.currentTarget.id) {
+            $('#insurancediv').show()
+        }
+    })
 
 	// ----------------------------------------------------------------------------
 
@@ -28,13 +41,36 @@ let frontend = async () => {
     $('#submit-oracle').click(() => {
         let flight = $('#flight-number').val()
         // Write transaction
-        contract.fetchFlightStatus(flight, (error, result) => {
-        	if ($('#' + result.airline + result.flight).length > 0) {
-        		$('#' + result.airline + result.flight).remove()
-        	}
-        	logEntry(result)
-        })
+        contract.fetchFlightStatus(flight,
+            (error, result) => {
+            	if ($('#' + result.airline + result.flight).length > 0) {
+            		$('#' + result.airline + result.flight).remove()
+            	}
+            	logEntry(result)
+            }
+        )
     })
+
+    // ----------------------------------------------------------------------------
+
+    /**
+     * User wants to subscribe an insurance
+     */
+    $('#insurancesubscribe').click(() => {
+        let insuranceValue = parseFloat($('#insurancevalue').val())
+        let flight = $('#flight-number').val()
+
+        contract.subscribeInsurance(flight, insuranceValue,
+            (error, result) => {
+                if (error) {
+                    console.log(error)
+                }
+                console.log(result)
+            }
+        )
+    })
+
+    // ----------------------------------------------------------------------------
 
     /**
      * A final flight status has been decided by Oracles
@@ -56,6 +92,18 @@ let frontend = async () => {
 		}
 	})
 
+    // ----------------------------------------------------------------------------
+
+    /**
+     * A customer bought an insurance
+     */
+    contract.flightSuretyApp.events.BuyInsurance({fromBlock: 0}, (error, event) => {
+        if (error) {
+            return console.log(error)
+        } else {
+            console.log(event.returnValues)
+        }
+    })
 }
 
 // ----------------------------------------------------------------------------

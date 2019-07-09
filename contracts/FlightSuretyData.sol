@@ -10,9 +10,14 @@ contract FlightSuretyData
 
     address private contractOwner; // Account used to deploy contract
     bool private operational = true; // Blocks all state changes throughout the contract if false
-    mapping(address => uint256) authorizedContracts; // Only allow a set of contracts to call this contract
+    mapping(address => bool) authorizedContracts; // Only allow a set of contracts to call this contract
 
 	// ----------------------------------------------------------------------------
+
+    // Key = address and flight concatenation, Value = deposit amount
+    mapping(bytes => uint256) private customerInsurance;
+
+    // ----------------------------------------------------------------------------
 
     /**
      * Constructor
@@ -54,7 +59,7 @@ contract FlightSuretyData
      */
     modifier requireIsAuthorized()
     {
-        require(authorizedContracts[msg.sender] == 1, "Caller is not authorized");
+        require(authorizedContracts[msg.sender] == true, "Caller is not authorized");
         _;
     }
 
@@ -92,7 +97,7 @@ contract FlightSuretyData
     	external
     	requireContractOwner
     {
-    	authorizedContracts[appContract] = 1;
+    	authorizedContracts[appContract] = true;
     }
 
 	// ----------------------------------------------------------------------------
@@ -124,10 +129,13 @@ contract FlightSuretyData
     /**
      * Buy insurance for a flight
      */
-    function buy()
+    function buy(bytes flight, address customer, uint256 amount)
     	external payable
     {
+        bytes memory key = getUserInsuranceKey(customer, flight);
+        require(customerInsurance[key] <= 0, "Customer already has an insurance for this flight");
 
+        customerInsurance[key] = amount;
     }
 
 	// ----------------------------------------------------------------------------
@@ -173,6 +181,28 @@ contract FlightSuretyData
     }
 
 	// ----------------------------------------------------------------------------
+
+    /**
+     * Generate an unique key for an user address and flight
+     */
+    function getUserInsuranceKey(address user, bytes memory flight)
+        internal
+        returns(bytes)
+    {
+        return abi.encodePacked(toBytes(msg.sender), flight);
+    }
+
+    /**
+     * Convert an address to bytes
+     */
+    function toBytes(address a)
+        internal pure
+        returns(bytes memory)
+    {
+        return abi.encodePacked(a);
+    }
+
+    // ----------------------------------------------------------------------------
 
     /**
      * @dev Fallback function for funding smart contract.

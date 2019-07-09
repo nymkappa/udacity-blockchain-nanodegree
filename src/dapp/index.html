@@ -22,8 +22,8 @@
 		<!-- MENU ---------------------------------------------------------------->
 
 	    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-	        <a class="navbar-brand" href="#flight">FlightSurety</a>
-	        <a class="navbar-brand" href="#customer">Customer</a>
+	        <a class="navbar-brand" id="flight" href="#flight">Flights</a>
+	        <a class="navbar-brand" id="insurance" href="#insurance">Insurance</a>
 	        <div class='field topbottombar'>OPERATIONAL STATUS</div>
 	        <div class='field-value' id='status'></div>
 	    </nav>
@@ -38,7 +38,7 @@
 
 	    		<!-- Controls -->
 		        <div class="row top-20">
-		            <label class="form" class='col-sm-3'>Flight</label>
+		            <label class='form'>Flight</label>
 		            <select id='flight-number' class='custom-select col-sm-3'>
 						<option value='SFY209'>SFY209</option>
 						<option value='N732TS'>N732TS</option>
@@ -57,14 +57,24 @@
 		    </section>
 		</main>
 
-		<main id="log" class="container">
+        <!-- Oracle request -->
+		<main id="requestdiv" class="container contentdiv">
 			<h2>Requests</h2>
 		    <section class="top-20" id='log_section'>
 		    </section>
 	    </main>
 
-	    <!-- Oracles requests -->
-	    <main id="oracles" class="container" style='display:none'></main>
+        <!-- Customer can subscribe an insurance -->
+        <main id="insurancediv" class="container contentdiv" style='display:none'>
+            <section class="top-20">
+            <h2>Insurance</h2>
+                <div class="row top-20">
+                    <label class='form' for='number'>Insurance value</label>
+                    <input type='number' class='col-sm-3' step='0.01' max='1' min='0.01' id='insurancevalue'></input>
+                    <btn class="btn btn-primary col-sm-3" id='insurancesubscribe'>Subscribe</btn>
+                </div>
+            </section>
+        </main>
 
 	</body>
 

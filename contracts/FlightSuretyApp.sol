@@ -12,7 +12,11 @@ contract FlightSuretyApp
     using SafeMath for uint256; // Allow SafeMath functions to be called for all uint256 types (similar to "prototype" in Javascript)
 
     address private contractOwner; // Account used to deploy contract
-    FlightSuretyData dataContract;
+    FlightSuretyData dataContract; // Data contract
+
+    // ----------------------------------------------------------------------------
+
+    event BuyInsurance(address customer, uint256 amount, bytes flight);
 
 	// ----------------------------------------------------------------------------
 
@@ -79,6 +83,22 @@ contract FlightSuretyApp
 		returns(bool)
     {
         return true;
+    }
+
+    // ----------------------------------------------------------------------------
+
+    /**
+     * A customer can buy an insurance
+     */
+    function buy(bytes flight)
+        external payable
+    {
+        require(msg.value > 0, "Customer must deposit some ether");
+        require(msg.value <= 1 ether, "Customer insurance deposit is maximum 1 ether");
+
+        dataContract.buy(flight, msg.sender, msg.value);
+
+        emit BuyInsurance(msg.sender, msg.value, flight);
     }
 
 	// ----------------------------------------------------------------------------
@@ -319,7 +339,7 @@ contract FlightSuretyData
     function registerAirline()
         public pure;
 
-    function buy()
+    function buy(bytes flight, address customer, uint256 amount)
     	public payable;
 
     function creditInsurees()
