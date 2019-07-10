@@ -14,10 +14,6 @@ contract FlightSuretyApp
     address private contractOwner; // Account used to deploy contract
     FlightSuretyData dataContract; // Data contract
 
-    // ----------------------------------------------------------------------------
-
-    event BuyInsurance(address customer, uint256 amount, bytes flight);
-
 	// ----------------------------------------------------------------------------
 
     // Flight status codes
@@ -97,8 +93,6 @@ contract FlightSuretyApp
         require(msg.value <= 1 ether, "Customer insurance deposit is maximum 1 ether");
 
         dataContract.buy(flight, msg.sender, msg.value);
-
-        emit BuyInsurance(msg.sender, msg.value, flight);
     }
 
 	// ----------------------------------------------------------------------------

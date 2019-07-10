@@ -14,8 +14,20 @@ contract FlightSuretyData
 
 	// ----------------------------------------------------------------------------
 
+    // Customers
     // Key = address and flight concatenation, Value = deposit amount
     mapping(bytes => uint256) private customerInsurance;
+
+    // Airlines
+    mapping(address => uint256) private airlineRegistered;
+    mapping(address => uint256) private airlineFunds;
+
+    // ----------------------------------------------------------------------------
+
+    event CustomerBuyInsurance(address customer, uint256 amount, bytes flight);
+    event AirlineRegistered(address airline);
+    event AirlineFunding(address airline, uint256 balance);
+    event AirlineAccepted(address airline);
 
     // ----------------------------------------------------------------------------
 
@@ -120,8 +132,25 @@ contract FlightSuretyData
      */
     function registerAirline()
 		external
-        pure
     {
+        require(airlineRegistered[msg.sender] == 0, "Airline already registered");
+        airlineRegistered[msg.sender] = 1; // Airline is now registered
+
+        emit AirlineRegistered(msg.sender);
+    }
+
+    // ----------------------------------------------------------------------------
+
+    /**
+     * Add funds to an airline account
+     */
+    function fundAirline()
+        public payable
+    {
+        require(msg.value > 0, "Airline must send some ether in order to fund their account");
+        airlineFunds[msg.sender] += msg.value; // Add some funds to the airline account
+
+        emit AirlineFunding(msg.sender, airlineFunds[msg.sender]);
     }
 
 	// ----------------------------------------------------------------------------
@@ -136,6 +165,8 @@ contract FlightSuretyData
         require(customerInsurance[key] <= 0, "Customer already has an insurance for this flight");
 
         customerInsurance[key] = amount;
+
+        emit CustomerBuyInsurance(customer, amount, flight);
     }
 
 	// ----------------------------------------------------------------------------
@@ -161,17 +192,6 @@ contract FlightSuretyData
 
 	// ----------------------------------------------------------------------------
 
-    /**
-     * Initial funding for the insurance. Unless there are too many delayed flights
-     * resulting in insurance payouts, the contract should be self-sustaining
-     */
-    function fund()
-    	public payable
-    {
-    }
-
-	// ----------------------------------------------------------------------------
-
     function getFlightKey(address airline, string memory flight,
 		uint256 timestamp)
 		pure internal
@@ -192,6 +212,8 @@ contract FlightSuretyData
         return abi.encodePacked(toBytes(msg.sender), flight);
     }
 
+    // ----------------------------------------------------------------------------
+
     /**
      * Convert an address to bytes
      */
@@ -205,13 +227,13 @@ contract FlightSuretyData
     // ----------------------------------------------------------------------------
 
     /**
-     * @dev Fallback function for funding smart contract.
+     * Fallback function for funding smart contract.
      *
      */
     function()
 		external payable
     {
-        fund();
+        fundAirline();
     }
 }
 
