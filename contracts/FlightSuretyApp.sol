@@ -9,7 +9,9 @@ import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
  */
 contract FlightSuretyApp
 {
-    using SafeMath for uint256; // Allow SafeMath functions to be called for all uint256 types (similar to "prototype" in Javascript)
+    using SafeMath for uint256;
+
+    // ----------------------------------------------------------------------------
 
     address private contractOwner; // Account used to deploy contract
     FlightSuretyData dataContract; // Data contract
@@ -24,41 +26,16 @@ contract FlightSuretyApp
     uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
-	// ----------------------------------------------------------------------------
+    // Refund coefficient
+    double private constant REFUND_COEFFICIENT = 1.5;
 
-    struct Flight {
-        bool isRegistered;
-        uint8 statusCode;
-        uint256 updatedTimestamp;
-        address airline;
-    }
-    mapping(bytes32 => Flight) private flights;
+    // ----------------------------------------------------------------------------
 
-	// ----------------------------------------------------------------------------
-	// MODIFIERS
-	// ----------------------------------------------------------------------------
-
-    /**
-    * Modifier that requires the "operational" boolean variable to be "true"
-    * This is used on all state changing functions to pause the contract in
-    * the event there is an issue that needs to be fixed
-    */
-    modifier requireIsOperational()
-    {
-        require(true, "Contract is currently not operational");
-        _;
-    }
-
-	// ----------------------------------------------------------------------------
-
-    /**
-    * Modifier that requires the "ContractOwner" account to be the function caller
-    */
-    modifier requireContractOwner()
-    {
-        require(msg.sender == contractOwner, "Caller is not contract owner");
-        _;
-    }
+    event CustomerUpdateInsurance(address customer, uint256 amount, bytes flight);
+    event AirlineRegistered(address airline);
+    event AirlineApproved(address airline);
+    event AirlineVotedApproval(address airline, address voter);
+    event AirlineFundAdded(address airline, uint256 currentBalance);
 
 	// ----------------------------------------------------------------------------
 
@@ -72,6 +49,48 @@ contract FlightSuretyApp
         dataContract = FlightSuretyData(dataContractAddress);
     }
 
+// region modfiers
+
+    // ----------------------------------------------------------------------------
+
+    /**
+    * Modifier that requires the "operational" boolean variable to be "true"
+    * This is used on all state changing functions to pause the contract in
+    * the event there is an issue that needs to be fixed
+    */
+    modifier requireIsOperational()
+    {
+        require(true, "Contract is currently not operational");
+        _;
+    }
+
+    // ----------------------------------------------------------------------------
+
+    /**
+    * Modifier that requires the "ContractOwner" account to be the function caller
+    */
+    modifier requireContractOwner()
+    {
+        require(msg.sender == contractOwner, "Caller is not contract owner");
+        _;
+    }
+
+    // ----------------------------------------------------------------------------
+
+    /**
+     * Only registered airline can execute this code
+     */
+    modifier _requireIsAuthorizedAirline(address airline)
+    {
+        // Requires at least 50% of approval from other airlines
+        require(airlineIsApproved(airline), "Airline is not yet approved");
+        _;
+    }
+
+// endregion modfiers
+
+// region accessControl
+
 	// ----------------------------------------------------------------------------
 
     function isOperational()
@@ -81,18 +100,25 @@ contract FlightSuretyApp
         return true;
     }
 
+// endregion accessControl
+
+// region airline
+
     // ----------------------------------------------------------------------------
 
     /**
-     * A customer can buy an insurance
+     * Check if an airline has been approved by at least 50%
+     * of approve airlines
      */
-    function buy(bytes flight)
-        external payable
+    function airlineIsApproved(address airline)
+        internal pure
+        returns(bool)
     {
-        require(msg.value > 0, "Customer must deposit some ether");
-        require(msg.value <= 1 ether, "Customer insurance deposit is maximum 1 ether");
-
-        dataContract.buy(flight, msg.sender, msg.value);
+        return(
+            dataContract.airlinesData[airline].totalYes
+            >=
+            dataContract.approvedAirlineNumber.length.div(2)
+        );
     }
 
 	// ----------------------------------------------------------------------------
@@ -100,12 +126,105 @@ contract FlightSuretyApp
     /**
      * Add an airline to the registration queue
      */
-    function registerAirline()
+    function registerAirline(address airline)
 		external pure
-		returns(bool success, uint256 votes)
     {
-        return (success, 0);
+        require(dataContract.airlinesData[airline].totalYes == 0, "Airline is already registered");
+
+        // Anyone can register the first airline
+        if (dataContract.airlines.length == 0) {
+            dataContract.addAirline(airline);
+            dataContract.setAirlineTotalYes(airline, 999999999); // We set the number of
+            // yes votes to a big number to make sure it always pass the 50% consensus rule
+        }
+        else {
+            // Only an approved airline can register an new airline
+            _requireIsAuthorizedAirline(msg.sender);
+            dataContract.addAirline(airline);
+            dataContract.registerAirlineVoter(airline, msg.sender);
+            dataContract.addOneAirlineYesVote(airline);
+        }
+
+        emit AirlineRegistered(airline);
     }
+
+    // ----------------------------------------------------------------------------
+
+    /**
+     * Approve an airline candidate
+     */
+    function approveAirlineCandidate(address airline)
+        external
+    {
+        require(dataContract.airlines.length >= 4, "Voting system starts with at least 4 airlines");
+
+        dataContract.registerAirlineVoter(airline, msg.sender);
+        dataContract.addOneAirlineYesVote(airline);
+        emit AirlineVotedApproval(airline, msg.sender);
+
+        if (airlineIsApproved(airline)) {
+            emit AirlineApproved(airline);
+        }
+    }
+
+    // ----------------------------------------------------------------------------
+
+    /**
+     * Add fund to the airline balance
+     */
+    function fundAirline()
+        external payable
+        _requireIsAuthorizedAirline(msg.sender)
+    {
+        dataContract.addAirlineFund(msg.senger, msg.value);
+
+        emit AirlineFundAdded(msg.senger, dataContract.airlinesData[msg.sender].funds);
+    }
+
+// endregion airline
+
+// region customer
+
+    // ----------------------------------------------------------------------------
+
+    /**
+     * When a flight is delayed because of the airline, the customer receives
+     * insurance_balance x REFUND_COEFFICIENT
+     */
+    function refundCustomer(address customer, bytes flight)
+        internal
+    {
+        bytes memory insureeKey = getUserInsureeKey(customer, flight);
+        uint256 insuranceBalance = dataContract.customerInsurance[insureeKey];
+        require(insuranceBalance > 0,
+            "Customer did not subscribe any insurance for this flight");
+
+        dataContract.creditCustomersBalance(address,
+            insuranceBalance * REFUND_COEFFICIENT,
+            flight
+        );
+    }
+
+    // ----------------------------------------------------------------------------
+
+    /**
+     * A customer can buy and deposit funds into an insurance fund
+     */
+    function updateCustomerInsurance(bytes flight)
+        external payable
+    {
+        require(msg.value > 0, "Customer must deposit some ether");
+        require(dataContract.customerInsurance[msg.sender] <= 1 ether,
+            "Customer insurance deposit is maximum 1 ether");
+
+        dataContract.updateCustomerInsurance(msg.sender, msg.value, flight);
+
+        emit CustomerUpdateInsurance(msg.sender, msg.value, flight);
+    }
+
+// endregion customer
+
+// region flight
 
 	// ----------------------------------------------------------------------------
 
@@ -149,6 +268,36 @@ contract FlightSuretyApp
 
         emit OracleRequest(index, airline, flight, timestamp);
     }
+
+// endregion flight
+
+// region utils
+
+    // ----------------------------------------------------------------------------
+
+    /**
+     * Generate an unique key for an user address and flight
+     */
+    function getUserInsureeKey(address user, bytes memory flight)
+        internal
+        returns(bytes)
+    {
+        return abi.encodePacked(toBytes(msg.sender), flight);
+    }
+
+    // ----------------------------------------------------------------------------
+
+    /**
+     * Convert an address to bytes
+     */
+    function toBytes(address a)
+        internal pure
+        returns(bytes memory)
+    {
+        return abi.encodePacked(a);
+    }
+
+// endregion utils
 
 // region oracle
 
@@ -327,23 +476,33 @@ contract FlightSuretyApp
 
 contract FlightSuretyData
 {
-    function setOperatingStatus(bool mode)
-    	public pure;
+    // ------------- Airlines ------------- //
 
-    function registerAirline()
+    struct Airline {
+        uint256 funds;
+        mapping(address => uint256) voters;
+        uint256 totalYes;
+    }
+    address[] public airlines;
+    mapping(address => Airline) public airlinesData;
+
+    function addAirline(address airline)
+        external pure;
+    function registerAirlineVoter(address airline, address voter)
+        external pure;
+    function addOneAirlineYesVote(address airline)
+        external pure;
+    function setAirlineTotalYes(address airline, uint256 totalYes)
+        external pure;
+
+    // ------------- Customer ------------- //
+
+    function updateCustomerInsurance(bytes insureeKey, uint256 amount)
+        external pure;
+    function creditCustomersBalance(address customer, uint256 amount)
         public pure;
-
-    function buy(bytes flight, address customer, uint256 amount)
-    	public payable;
-
-    function creditInsurees()
-    	public pure;
-
     function pay()
-    	public pure;
-
-    function fund()
-    	public payable;
+        public pure;
 }
 
-// endregion interface
+// endregion interfacedata

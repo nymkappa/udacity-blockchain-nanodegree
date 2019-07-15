@@ -22,50 +22,86 @@
 		<!-- MENU ---------------------------------------------------------------->
 
 	    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-	        <a class="navbar-brand" id="flight" href="#flight">Flights</a>
-	        <a class="navbar-brand" id="insurance" href="#insurance">Insurance</a>
+            <a class="navbar-brand" id="airline" href="#airline">Airlines</a>
+            <a class="navbar-brand" id="flight" href="#flight">Flights</a>
+	        <a class="navbar-brand" id="insurance" href="#insurance">Customers</a>
 	        <div class='field topbottombar'>OPERATIONAL STATUS</div>
 	        <div class='field-value' id='status'></div>
 	    </nav>
 
-		<!-- CONTENT ------------------------------------------------------------->
+		<!-- AIRLINE ------------------------------------------------------------->
+
+        <!-- Register an airline -->
+        <main id="airlines-div" class="container first">
+            <section>
+                <h2>Register an airline</h2>
+                <div class="row top-20">
+                    <select id='airline-name' class='custom-select col-sm-3'>
+                        <option value='air_fr'>Air France (AF)</option>
+                        <option value='kr_air'>Korean Air (KA)</option>
+                        <option value='ph_airline'>Philippines Airline (PA)</option>
+                        <option value='cebu_pa'>Cebu Pacific (CP)</option>
+                    </select>
+                    <input type='text' length=6 class='col-sm-3' step='0.01'
+                        max='1' min='0.01' id='airline-deposis'></input>
+                    <btn class="btn btn-primary col-sm-3" id='add-flight'>Register</btn>
+                </div>
+            </section>
+        </main>
+
+        <!-- FLIGHTS ------------------------------------------------------------->
+
+        <!-- Register a flight -->
+        <main id="flights-div" class="container first">
+            <section>
+                <h2>Register a flight</h2>
+                <div class="row top-20">
+                    <select id='airline-name' class='custom-select col-sm-3'>
+                        <option value='AFY209'>AFY209 (Air France)</option>
+                        <option value='AF32TS'>AF32TS (Air France)</option>
+                        <option value='AFY207'>AFY207 (Air France)</option>
+                        <option value='AKY204'>AKY204 (Air Korea)</option>
+                        <option value='AK23ST'>AK23ST (Air Korea)</option>
+                        <option value='AK2JAT'>AK2JAT (Air Korea)</option>
+                        <option value='PA55DG'>PA55DG (Philippines Airline)</option>
+                        <option value='PAY886'>PAY886 (Philippines Airline)</option>
+                        <option value='PAY887'>PAY887 (Philippines Airline)</option>
+                        <option value='CPY886'>CPY886 (Cebu Pacific)</option>
+                        <option value='CPY771'>CPY771 (Cebu Pacific)</option>
+                        <option value='CPY201'>CPY201 (Cebu Pacific)</option>
+                    </select>
+                    <input type='text' length=6 class='col-sm-3' step='0.01' max='1' min='0.01' id='insurancevalue'></input>
+                    <btn class="btn btn-primary col-sm-3" id='add-flight'>Register</btn>
+                </div>
+            </section>
+        </main>
 
 	    <!-- Fetch flight -->
-	    <main id="oracles" class="container first">
+	    <main id="oracles" class="container">
 	    	<section>
 	    		<h2>Check flight status</h2>
 	    		<h5>Check a flight status and trigger refunds in needed</h5>
 
 	    		<!-- Controls -->
 		        <div class="row top-20">
-		            <label class='form'>Flight</label>
 		            <select id='flight-number' class='custom-select col-sm-3'>
-						<option value='SFY209'>SFY209</option>
-						<option value='N732TS'>N732TS</option>
-						<option value='SFY207'>SFY207</option>
-						<option value='SFY204'>SFY204</option>
-						<option value='N323ST'>N323ST</option>
-						<option value='N955DG'>N955DG</option>
-						<option value='SFY886'>SFY886</option>
-						<option value='SFY887'>SFY887</option>
-						<option value='SFY886'>SFY886</option>
-						<option value='SFY771'>SFY771</option>
-						<option value='SFY201'>SFY201</option>
 		            </select>
 		            <btn class="btn btn-primary col-sm-3" id="submit-oracle">Submit to Oracles</btn>
 		        </div>
 		    </section>
 		</main>
 
-        <!-- Oracle request -->
-		<main id="requestdiv" class="container contentdiv">
+        <!-- Oracle requests -->
+		<main id="requests-div" class="container contentdiv">
 			<h2>Requests</h2>
 		    <section class="top-20" id='log_section'>
 		    </section>
 	    </main>
 
+        <!-- CUSTOMERS ------------------------------------------------------------->
+
         <!-- Customer can subscribe an insurance -->
-        <main id="insurancediv" class="container contentdiv" style='display:none'>
+        <main id="customers-div" class="container contentdiv" style='display:none'>
             <section class="top-20">
             <h2>Insurance</h2>
                 <div class="row top-20">

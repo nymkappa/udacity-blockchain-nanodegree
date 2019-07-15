@@ -8,7 +8,15 @@ module.exports = function(deployer) {
 	deployer.deploy(FlightSuretyData)
 	.then(() => {
 		return deployer.deploy(FlightSuretyApp, FlightSuretyData.address)
-		.then(() => {
+		.then((instance) => {
+            /**
+             * Register the first airline
+             */
+            console.log(FlightSuretyApp)
+
+            /**
+             * Save configuration for oracle server and dapp
+             */
 			let config = {
 				localhost: {
 					url: 'ws://localhost:8545',

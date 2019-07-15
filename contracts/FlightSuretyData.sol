@@ -14,20 +14,37 @@ contract FlightSuretyData
 
 	// ----------------------------------------------------------------------------
 
-    // Customers
-    // Key = address and flight concatenation, Value = deposit amount
-    mapping(bytes => uint256) private customerInsurance;
-
-    // Airlines
-    mapping(address => uint256) private airlineRegistered;
-    mapping(address => uint256) private airlineFunds;
+    /**
+     * Customers
+     */
+    mapping(bytes => uint256) public customerInsurance; // Key = address.flight
+    mapping(address => uint256) public customerBalance;
 
     // ----------------------------------------------------------------------------
 
-    event CustomerBuyInsurance(address customer, uint256 amount, bytes flight);
-    event AirlineRegistered(address airline);
-    event AirlineFunding(address airline, uint256 balance);
-    event AirlineAccepted(address airline);
+    /**
+     * Airlines
+     */
+    struct Airline {
+        uint256 funds;
+        mapping(address => uint256) voters;
+        uint256 totalYes;
+    }
+    address[] public airlines;
+    mapping(address => Airline) public airlinesData;
+
+    // ----------------------------------------------------------------------------
+
+    /**
+     * Flights
+     */
+    struct Flight {
+        bool isRegistered;
+        uint8 statusCode;
+        uint256 updatedTimestamp;
+        address airline;
+    }
+    mapping(bytes => Flight) public flights;
 
     // ----------------------------------------------------------------------------
 
@@ -39,6 +56,8 @@ contract FlightSuretyData
     {
         contractOwner = msg.sender;
     }
+
+// region modifiers
 
 	// ----------------------------------------------------------------------------
 
@@ -75,6 +94,10 @@ contract FlightSuretyData
         _;
     }
 
+// endregion modifiers
+
+// region accesscontrol
+
 	// ----------------------------------------------------------------------------
 
     /**
@@ -86,7 +109,6 @@ contract FlightSuretyData
     {
         return operational;
     }
-
 
 	// ----------------------------------------------------------------------------
 
@@ -124,105 +146,80 @@ contract FlightSuretyData
     	delete authorizedContracts[appContract];
     }
 
+// endregion accesscontrol
+
+// region airline
+
+	// ----------------------------------------------------------------------------
+
+    function addAirline(address airline)
+        external
+    {
+        airlines.push(airline);
+    }
+
+    function registerAirlineVoter(address airline, address voter)
+        external
+    {
+        airlinesData[airline].voters[voter] = 1;
+    }
+
+    function addOneAirlineYesVote(address airline)
+        external
+    {
+        airlinesData[airline].totalYes.add(1);
+    }
+
+    function setAirlineTotalYes(address airline, uint256 totalYes)
+        external
+    {
+        airlinesData[airline].totalYes = totalYes;
+    }
+
+    function addAirlineFund(address airline, uint256 amount)
+        public payable
+    {
+        airlinesData[airline].funds.add(amount);
+    }
+
+// endregion airline
+
+// region customer
+
 	// ----------------------------------------------------------------------------
 
     /**
-     * Add an airline to the registration queue
-     * Can only be called from FlightSuretyApp contract
+     * Update insuree deposit for a flight
      */
-    function registerAirline()
-		external
+    function updateCustomerInsurance(bytes insureeKey, uint256 amount)
+    	external
     {
-        require(airlineRegistered[msg.sender] == 0, "Airline already registered");
-        airlineRegistered[msg.sender] = 1; // Airline is now registered
-
-        emit AirlineRegistered(msg.sender);
+        customerInsurance[insureeKey].add(amount);
     }
 
     // ----------------------------------------------------------------------------
 
     /**
-     * Add funds to an airline account
+     * Add withdrawable fund to the customer account
      */
-    function fundAirline()
-        public payable
+    function creditCustomersBalance(address customer, uint256 amount)
+        external
     {
-        require(msg.value > 0, "Airline must send some ether in order to fund their account");
-        airlineFunds[msg.sender] += msg.value; // Add some funds to the airline account
-
-        emit AirlineFunding(msg.sender, airlineFunds[msg.sender]);
+        customerAccount[customer] = amount;
     }
 
-	// ----------------------------------------------------------------------------
-
-    /**
-     * Buy insurance for a flight
-     */
-    function buy(bytes flight, address customer, uint256 amount)
-    	external payable
-    {
-        bytes memory key = getUserInsuranceKey(customer, flight);
-        require(customerInsurance[key] <= 0, "Customer already has an insurance for this flight");
-
-        customerInsurance[key] = amount;
-
-        emit CustomerBuyInsurance(customer, amount, flight);
-    }
-
-	// ----------------------------------------------------------------------------
-
-    /**
-     *  Credits payouts to insurees
-     */
-    function creditInsurees()
-    	external pure
-    {
-    }
-
-	// ----------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------
 
     /**
      * Transfers eligible payout funds to insuree
      *
      */
     function pay()
-    	external pure
+        external pure
     {
     }
 
-	// ----------------------------------------------------------------------------
-
-    function getFlightKey(address airline, string memory flight,
-		uint256 timestamp)
-		pure internal
-		returns(bytes32)
-    {
-        return keccak256(abi.encodePacked(airline, flight, timestamp));
-    }
-
-	// ----------------------------------------------------------------------------
-
-    /**
-     * Generate an unique key for an user address and flight
-     */
-    function getUserInsuranceKey(address user, bytes memory flight)
-        internal
-        returns(bytes)
-    {
-        return abi.encodePacked(toBytes(msg.sender), flight);
-    }
-
-    // ----------------------------------------------------------------------------
-
-    /**
-     * Convert an address to bytes
-     */
-    function toBytes(address a)
-        internal pure
-        returns(bytes memory)
-    {
-        return abi.encodePacked(a);
-    }
+// endregion customer
 
     // ----------------------------------------------------------------------------
 
@@ -233,7 +230,7 @@ contract FlightSuretyData
     function()
 		external payable
     {
-        fundAirline();
+        addAirlineFund();
     }
 }
 
