@@ -17,7 +17,7 @@ contract FlightSuretyData
     /**
      * Customers
      */
-    mapping(bytes => uint256) public customerInsurance; // Key = address.flight
+    mapping(bytes32 => uint256) public customerInsurance; // address.flight / deposit
     mapping(address => uint256) public customerBalance;
 
     // ----------------------------------------------------------------------------
@@ -27,11 +27,13 @@ contract FlightSuretyData
      */
     struct Airline {
         uint256 funds;
-        mapping(address => uint256) voters;
         uint256 totalYes;
+        mapping(address => uint8) approvers;
     }
-    address[] public airlines;
-    mapping(address => Airline) public airlinesData;
+    uint256 public approvedAirlineNumber;
+    address[] public candidateAirlines;
+    address[] public approvedAirlines;
+    mapping(address => Airline) public airlinesData; // address: airline, Airline data
 
     // ----------------------------------------------------------------------------
 
@@ -44,7 +46,7 @@ contract FlightSuretyData
         uint256 updatedTimestamp;
         address airline;
     }
-    mapping(bytes => Flight) public flights;
+    mapping(bytes32 => Flight) public flights;
 
     // ----------------------------------------------------------------------------
 
@@ -155,22 +157,22 @@ contract FlightSuretyData
     function addAirline(address airline)
         external
     {
-        airlines.push(airline);
+        candidateAirlines.push(airline);
     }
 
-    function registerAirlineVoter(address airline, address voter)
+    function registerAirlineApprover(address airline, address voter)
         external
     {
-        airlinesData[airline].voters[voter] = 1;
+        airlinesData[airline].approvers[voter] = 1;
     }
 
-    function addOneAirlineYesVote(address airline)
-        external
+    function addOneAirlineApproval(address airline)
+        external view
     {
         airlinesData[airline].totalYes.add(1);
     }
 
-    function setAirlineTotalYes(address airline, uint256 totalYes)
+    function setAirlineTotalApproval(address airline, uint256 totalYes)
         external
     {
         airlinesData[airline].totalYes = totalYes;
@@ -191,8 +193,8 @@ contract FlightSuretyData
     /**
      * Update insuree deposit for a flight
      */
-    function updateCustomerInsurance(bytes insureeKey, uint256 amount)
-    	external
+    function updateCustomerInsurance(bytes32 insureeKey, uint256 amount)
+    	external view
     {
         customerInsurance[insureeKey].add(amount);
     }
@@ -205,7 +207,7 @@ contract FlightSuretyData
     function creditCustomersBalance(address customer, uint256 amount)
         external
     {
-        customerAccount[customer] = amount;
+        customerBalance[customer] = amount;
     }
 
     // ----------------------------------------------------------------------------
@@ -230,7 +232,7 @@ contract FlightSuretyData
     function()
 		external payable
     {
-        addAirlineFund();
+        addAirlineFund(msg.sender, msg.value);
     }
 }
 

@@ -27,7 +27,7 @@ contract FlightSuretyApp
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
     // Refund coefficient
-    double private constant REFUND_COEFFICIENT = 1.5;
+    uint8 private constant REFUND_PERCENTAGE = 150;
 
     // ----------------------------------------------------------------------------
 
@@ -111,13 +111,14 @@ contract FlightSuretyApp
      * of approve airlines
      */
     function airlineIsApproved(address airline)
-        internal pure
+        internal view
         returns(bool)
     {
+    	(uint256 funds, uint256 totalYes) = dataContract.airlinesData(airline);
+    	uint256 approvedAirlineNumber = dataContract.approvedAirlineNumber();
+
         return(
-            dataContract.airlinesData[airline].totalYes
-            >=
-            dataContract.approvedAirlineNumber.length.div(2)
+            totalYes >= approvedAirlineNumber.div(2)
         );
     }
 
@@ -127,22 +128,24 @@ contract FlightSuretyApp
      * Add an airline to the registration queue
      */
     function registerAirline(address airline)
-		external pure
+		external
     {
-        require(dataContract.airlinesData[airline].totalYes == 0, "Airline is already registered");
+    	(uint256 funds, uint256 totalYes) = dataContract.airlinesData(airline);
+
+        require(totalYes == 0, "Airline is already registered");
 
         // Anyone can register the first airline
-        if (dataContract.airlines.length == 0) {
+        if (dataContract.approvedAirlineNumber() == 0) {
             dataContract.addAirline(airline);
-            dataContract.setAirlineTotalYes(airline, 999999999); // We set the number of
+            dataContract.setAirlineTotalApproval(airline, 999999999); // We set the number of
             // yes votes to a big number to make sure it always pass the 50% consensus rule
         }
         else {
             // Only an approved airline can register an new airline
-            _requireIsAuthorizedAirline(msg.sender);
+            require(airlineIsApproved(msg.sender), "Airline is not yet approved");
             dataContract.addAirline(airline);
-            dataContract.registerAirlineVoter(airline, msg.sender);
-            dataContract.addOneAirlineYesVote(airline);
+            dataContract.registerAirlineApprover(airline, msg.sender);
+            dataContract.addOneAirlineApproval(airline);
         }
 
         emit AirlineRegistered(airline);
@@ -156,10 +159,10 @@ contract FlightSuretyApp
     function approveAirlineCandidate(address airline)
         external
     {
-        require(dataContract.airlines.length >= 4, "Voting system starts with at least 4 airlines");
+        require(dataContract.approvedAirlineNumber() >= 4, "Voting system starts with at least 4 airlines");
 
-        dataContract.registerAirlineVoter(airline, msg.sender);
-        dataContract.addOneAirlineYesVote(airline);
+        dataContract.registerAirlineApprover(airline, msg.sender);
+        dataContract.addOneAirlineApproval(airline);
         emit AirlineVotedApproval(airline, msg.sender);
 
         if (airlineIsApproved(airline)) {
@@ -172,13 +175,13 @@ contract FlightSuretyApp
     /**
      * Add fund to the airline balance
      */
-    function fundAirline()
+    function addAirlineFund()
         external payable
         _requireIsAuthorizedAirline(msg.sender)
     {
-        dataContract.addAirlineFund(msg.senger, msg.value);
-
-        emit AirlineFundAdded(msg.senger, dataContract.airlinesData[msg.sender].funds);
+        dataContract.addAirlineFund(msg.sender, msg.value);
+    	(uint256 funds, uint256 totalYes) = dataContract.airlinesData(msg.sender);
+        emit AirlineFundAdded(msg.sender, funds);
     }
 
 // endregion airline
@@ -189,20 +192,20 @@ contract FlightSuretyApp
 
     /**
      * When a flight is delayed because of the airline, the customer receives
-     * insurance_balance x REFUND_COEFFICIENT
+     * insurance_balance x REFUND_PERCENTAGE
      */
-    function refundCustomer(address customer, bytes flight)
-        internal
+    function _refundCustomer(address customer, bytes flight)
+        internal view
     {
-        bytes memory insureeKey = getUserInsureeKey(customer, flight);
-        uint256 insuranceBalance = dataContract.customerInsurance[insureeKey];
+        bytes32 insureeKey = bytes32(getUserInsureeKey(customer, flight));
+        uint256 insuranceBalance = dataContract.customerInsurance(insureeKey);
         require(insuranceBalance > 0,
             "Customer did not subscribe any insurance for this flight");
 
-        dataContract.creditCustomersBalance(address,
-            insuranceBalance * REFUND_COEFFICIENT,
-            flight
-        );
+        // If I deposit 0.5 ether to my insurance fund, I will be refunded:
+        // 0.5 ether * 150 = 75; 75 / 100 = 0.75 ether
+        dataContract.creditCustomersBalance(customer,
+            insuranceBalance * REFUND_PERCENTAGE / 100);
     }
 
     // ----------------------------------------------------------------------------
@@ -214,11 +217,12 @@ contract FlightSuretyApp
         external payable
     {
         require(msg.value > 0, "Customer must deposit some ether");
-        require(dataContract.customerInsurance[msg.sender] <= 1 ether,
+
+        bytes32 insureeKey = getUserInsureeKey(msg.sender, flight);
+        require(dataContract.customerInsurance(insureeKey) <= 1 ether,
             "Customer insurance deposit is maximum 1 ether");
 
-        dataContract.updateCustomerInsurance(msg.sender, msg.value, flight);
-
+        dataContract.updateCustomerInsurance(insureeKey, msg.value);
         emit CustomerUpdateInsurance(msg.sender, msg.value, flight);
     }
 
@@ -279,10 +283,10 @@ contract FlightSuretyApp
      * Generate an unique key for an user address and flight
      */
     function getUserInsureeKey(address user, bytes memory flight)
-        internal
-        returns(bytes)
+        internal view
+        returns(bytes32)
     {
-        return abi.encodePacked(toBytes(msg.sender), flight);
+        return keccak256(abi.encodePacked(toBytes(msg.sender), flight));
     }
 
     // ----------------------------------------------------------------------------
@@ -480,24 +484,31 @@ contract FlightSuretyData
 
     struct Airline {
         uint256 funds;
-        mapping(address => uint256) voters;
         uint256 totalYes;
+        mapping(address => uint8) approvers;
     }
-    address[] public airlines;
-    mapping(address => Airline) public airlinesData;
+    uint256 public approvedAirlineNumber;
+    address[] public candidateAirlines;
+    address[] public approvedAirlines;
+    mapping(address => Airline) public airlinesData; // airline / data
 
     function addAirline(address airline)
         external pure;
-    function registerAirlineVoter(address airline, address voter)
+    function registerAirlineApprover(address airline, address voter)
         external pure;
-    function addOneAirlineYesVote(address airline)
+    function addOneAirlineApproval(address airline)
         external pure;
-    function setAirlineTotalYes(address airline, uint256 totalYes)
+    function setAirlineTotalApproval(address airline, uint256 totalYes)
         external pure;
+    function addAirlineFund(address airline, uint256 amount)
+        external payable;
 
     // ------------- Customer ------------- //
 
-    function updateCustomerInsurance(bytes insureeKey, uint256 amount)
+    mapping(bytes32 => uint256) public customerInsurance; // address.flight / deposit
+    mapping(address => uint256) public customerBalance;
+
+    function updateCustomerInsurance(bytes32 insureeKey, uint256 amount)
         external pure;
     function creditCustomersBalance(address customer, uint256 amount)
         public pure;
