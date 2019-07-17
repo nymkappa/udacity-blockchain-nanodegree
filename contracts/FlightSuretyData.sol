@@ -38,19 +38,6 @@ contract FlightSuretyData
     // ----------------------------------------------------------------------------
 
     /**
-     * Flights
-     */
-    struct Flight {
-        bool isRegistered;
-        uint8 statusCode;
-        uint256 updatedTimestamp;
-        address airline;
-    }
-    mapping(bytes32 => Flight) public flights;
-
-    // ----------------------------------------------------------------------------
-
-    /**
      * Constructor
      */
     constructor()
@@ -68,7 +55,7 @@ contract FlightSuretyData
      * This is used on all state changing functions to pause the contract in
      * the event there is an issue that needs to be fixed
      */
-    modifier requireIsOperational()
+    modifier _requireIsOperational()
     {
         require(operational, "Contract is currently not operational");
         _;  // All modifiers require an "_" which indicates where the function body will be added
@@ -118,7 +105,7 @@ contract FlightSuretyData
      * Sets contract operations on/off
      * When operational mode is disabled, all write transactions except for this one will fail
      */
-    function setOperatingStatus(bool mode)
+    function setOperational(bool mode)
 		external
     {
         operational = mode;
@@ -153,11 +140,18 @@ contract FlightSuretyData
 // region airline
 
 	// ----------------------------------------------------------------------------
+	// Setters
 
-    function addAirline(address airline)
+    function addAirline(address airline) _requireIsOperational
         external
     {
         candidateAirlines.push(airline);
+    }
+
+    function addApprovedAirline(address airline)
+        external
+    {
+        approvedAirlines.push(airline);
     }
 
     function registerAirlineApprover(address airline, address voter)
@@ -167,9 +161,9 @@ contract FlightSuretyData
     }
 
     function addOneAirlineApproval(address airline)
-        external view
+        external
     {
-        airlinesData[airline].totalYes.add(1);
+        airlinesData[airline].totalYes = airlinesData[airline].totalYes.add(1);
     }
 
     function setAirlineTotalApproval(address airline, uint256 totalYes)
@@ -178,10 +172,48 @@ contract FlightSuretyData
         airlinesData[airline].totalYes = totalYes;
     }
 
+	// ----------------------------------------------------------------------------
+	// Getter
+
     function addAirlineFund(address airline, uint256 amount)
         public payable
     {
-        airlinesData[airline].funds.add(amount);
+        airlinesData[airline].funds = airlinesData[airline].funds.add(amount);
+    }
+
+    function getApprovedAirlineNumber() _requireIsOperational
+    	external view
+    	returns(uint256)
+    {
+    	return approvedAirlines.length;
+    }
+
+   	function getCandidateAirlines()
+   		external view
+		returns (address[])
+   	{
+     	return candidateAirlines;
+   	}
+
+   	function getApprovedAirlines()
+   		external view
+		returns (address[])
+   	{
+     	return approvedAirlines;
+   	}
+
+    function getAirlineData(address airline)
+    	external view
+    	returns(uint256, uint256)
+    {
+    	return (airlinesData[airline].funds, airlinesData[airline].totalYes);
+    }
+
+    function getAirlineApprover(address airline, address approver)
+    	external view
+    	returns(uint8)
+    {
+    	return (airlinesData[airline].approvers[approver]);
     }
 
 // endregion airline

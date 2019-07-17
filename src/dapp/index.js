@@ -24,13 +24,18 @@ let frontend = async () => {
     /**
      * Check if the contract is operational
      */
-    $('.navbar-brand').click((e) => {
+    $('.nav-link').click((e) => {
+    	$('.nav-link').removeClass('active')
+    	$('#'+e.currentTarget.id).addClass('active')
+
         $('.contentdiv').hide()
         if ('flight' === e.currentTarget.id) {
-            $('#requestdiv').show()
-        } else if ('insurance' === e.currentTarget.id) {
-            $('#insurancediv').show()
-        }
+            $('#flights-div').show()
+        } else if ('airline' === e.currentTarget.id) {
+        	$('#airlines-div').show()
+        } else if ('customer' === e.currentTarget.id) {
+            $('#customers-div').show()
+    	}
     })
 
 	// ----------------------------------------------------------------------------
@@ -56,12 +61,16 @@ let frontend = async () => {
     /**
      * Register an airline
      */
-
-    // ----------------------------------------------------------------------------
-
-    /**
-     * Register a flight
-     */
+    $('#add-airline').click(() => {
+        let airline = $('#airline-name').val()
+        // Write transaction
+        contract.registerAirline(airline,
+            (error, result) => {
+            	console.log(error, result)
+            	// logEntry(result)
+            }
+        )
+    })
 
     // ----------------------------------------------------------------------------
 
@@ -109,13 +118,13 @@ let frontend = async () => {
     /**
      * A customer bought an insurance
      */
-    contract.flightSuretyApp.events.BuyInsurance({fromBlock: 0}, (error, event) => {
-        if (error) {
-            return console.log(error)
-        } else {
-            console.log(event.returnValues)
-        }
-    })
+    // contract.flightSuretyApp.events.BuyInsurance({fromBlock: 0}, (error, event) => {
+    //     if (error) {
+    //         return console.log(error)
+    //     } else {
+    //         console.log(event.returnValues)
+    //     }
+    // })
 }
 
 // ----------------------------------------------------------------------------

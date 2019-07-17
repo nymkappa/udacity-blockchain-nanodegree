@@ -4,7 +4,7 @@ const fs = require('fs');
 
 module.exports = function(deployer) {
 
-	let firstAirline = '0xf17f52151EbEF6C7334FAD080c5704D77216b732';
+	let firstAirline = '0x1c7E225484D13D66b67183B9384Cd051fb1A6539'; // Air France
 	deployer.deploy(FlightSuretyData)
 	.then(() => {
 		return deployer.deploy(FlightSuretyApp, FlightSuretyData.address)
@@ -12,7 +12,7 @@ module.exports = function(deployer) {
             /**
              * Register the first airline
              */
-            console.log(FlightSuretyApp)
+            instance.registerAirline('0x1c7e225484d13d66b67183b9384cd051fb1a6539')
 
             /**
              * Save configuration for oracle server and dapp

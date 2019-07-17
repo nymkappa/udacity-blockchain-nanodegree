@@ -3,7 +3,6 @@ import BigNumber from "bignumber.js"
 import FlightSuretyApp from '../../build/contracts/FlightSuretyApp.json'
 import Config from './config.json'
 import Web3 from 'web3'
-import express from 'express'
 
 /**
  * Contract configuration
@@ -202,18 +201,5 @@ const intRandom = (min, max) => {
    max = Math.floor(max);
    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// API
-///////////////////////////////////////////////////////////////////////////////
-
-const app = express()
-app.get('/api', (req, res) => {
-    res.send({
-      message: 'An API for use with your Dapp!'
-    })
-})
-
-export default app
 
 

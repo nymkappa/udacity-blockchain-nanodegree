@@ -14,7 +14,7 @@ contract FlightSuretyApp
     // ----------------------------------------------------------------------------
 
     address private contractOwner; // Account used to deploy contract
-    FlightSuretyData dataContract; // Data contract
+    FlightSuretyData public dataContract; // Data contract
 
 	// ----------------------------------------------------------------------------
 
@@ -114,8 +114,8 @@ contract FlightSuretyApp
         internal view
         returns(bool)
     {
-    	(uint256 funds, uint256 totalYes) = dataContract.airlinesData(airline);
-    	uint256 approvedAirlineNumber = dataContract.approvedAirlineNumber();
+    	(uint256 funds, uint256 totalYes) = dataContract.getAirlineData(airline);
+    	uint256 approvedAirlineNumber = dataContract.getApprovedAirlineNumber();
 
         return(
             totalYes >= approvedAirlineNumber.div(2)
@@ -130,14 +130,14 @@ contract FlightSuretyApp
     function registerAirline(address airline)
 		external
     {
-    	(uint256 funds, uint256 totalYes) = dataContract.airlinesData(airline);
+    	(uint256 funds, uint256 totalYes) = dataContract.getAirlineData(airline);
 
         require(totalYes == 0, "Airline is already registered");
 
         // Anyone can register the first airline
-        if (dataContract.approvedAirlineNumber() == 0) {
-            dataContract.addAirline(airline);
+        if (dataContract.getApprovedAirlineNumber() == 0) {
             dataContract.setAirlineTotalApproval(airline, 999999999); // We set the number of
+            dataContract.addApprovedAirline(airline);
             // yes votes to a big number to make sure it always pass the 50% consensus rule
         }
         else {
@@ -159,7 +159,7 @@ contract FlightSuretyApp
     function approveAirlineCandidate(address airline)
         external
     {
-        require(dataContract.approvedAirlineNumber() >= 4, "Voting system starts with at least 4 airlines");
+        require(dataContract.getApprovedAirlineNumber() >= 4, "Voting system starts with at least 4 airlines");
 
         dataContract.registerAirlineApprover(airline, msg.sender);
         dataContract.addOneAirlineApproval(airline);
@@ -229,19 +229,6 @@ contract FlightSuretyApp
 // endregion customer
 
 // region flight
-
-	// ----------------------------------------------------------------------------
-
-    /**
-     * Register a future flight for insuring.
-     */
-    function registerFlight()
-		external pure
-    {
-
-    }
-
-	// ----------------------------------------------------------------------------
 
     /**
      * Called after oracle has updated flight status
@@ -494,6 +481,8 @@ contract FlightSuretyData
 
     function addAirline(address airline)
         external pure;
+    function addApprovedAirline(address airline)
+        external pure;
     function registerAirlineApprover(address airline, address voter)
         external pure;
     function addOneAirlineApproval(address airline)
@@ -514,6 +503,24 @@ contract FlightSuretyData
         public pure;
     function pay()
         public pure;
+
+    // ------------- Getters ------------- //
+
+    function getApprovedAirlineNumber()
+    	external pure
+    	returns(uint256);
+   	function getCandidateAirlines()
+   		external pure
+		returns (address[]);
+   	function getApprovedAirlines()
+   		external pure
+		returns (address[]);
+    function getAirlineData(address airline)
+    	external pure
+    	returns(uint256, uint256);
+    function getAirlineApprover(address airline, address approver)
+    	external pure
+    	returns(uint8);
 }
 
 // endregion interfacedata
