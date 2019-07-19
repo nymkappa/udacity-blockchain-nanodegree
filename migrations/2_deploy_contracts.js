@@ -3,16 +3,16 @@ const FlightSuretyData = artifacts.require("FlightSuretyData");
 const fs = require('fs');
 
 module.exports = function(deployer) {
-
-	let firstAirline = '0x1c7E225484D13D66b67183B9384Cd051fb1A6539'; // Air France
 	deployer.deploy(FlightSuretyData)
-	.then(() => {
+	.then((instanceData) => {
 		return deployer.deploy(FlightSuretyApp, FlightSuretyData.address)
-		.then((instance) => {
-            /**
-             * Register the first airline
-             */
-            instance.registerAirline('0x1c7e225484d13d66b67183b9384cd051fb1a6539')
+		.then((instanceApp) => {
+
+            // Authorize the app contract
+            instanceData.authorize(instanceApp.address)
+            // Register the first airline
+            instanceData.addApprovedAirline(
+                '0x1c7E225484D13D66b67183B9384Cd051fb1A6539')
 
             /**
              * Save configuration for oracle server and dapp

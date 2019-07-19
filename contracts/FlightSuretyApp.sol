@@ -14,6 +14,7 @@ contract FlightSuretyApp
     // ----------------------------------------------------------------------------
 
     address private contractOwner; // Account used to deploy contract
+    bool private operational = true; // Blocks all state changes throughout the contract if false
     FlightSuretyData public dataContract; // Data contract
 
 	// ----------------------------------------------------------------------------
@@ -27,6 +28,7 @@ contract FlightSuretyApp
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
     // Refund coefficient
+    uint8 private constant MIN_AIRLINE_BEFORE_CONSENSUS = 4;
     uint8 private constant REFUND_PERCENTAGE = 150;
 
     // ----------------------------------------------------------------------------
@@ -58,9 +60,9 @@ contract FlightSuretyApp
     * This is used on all state changing functions to pause the contract in
     * the event there is an issue that needs to be fixed
     */
-    modifier requireIsOperational()
+    modifier _requireIsOperational()
     {
-        require(true, "Contract is currently not operational");
+        require(operational, "Contract is currently not operational");
         _;
     }
 
@@ -69,7 +71,7 @@ contract FlightSuretyApp
     /**
     * Modifier that requires the "ContractOwner" account to be the function caller
     */
-    modifier requireContractOwner()
+    modifier _requireContractOwner()
     {
         require(msg.sender == contractOwner, "Caller is not contract owner");
         _;
@@ -83,7 +85,7 @@ contract FlightSuretyApp
     modifier _requireIsAuthorizedAirline(address airline)
     {
         // Requires at least 50% of approval from other airlines
-        require(airlineIsApproved(airline), "Airline is not yet approved");
+        require(isAirlineApproved(airline), "Airline is not yet approved");
         _;
     }
 
@@ -91,13 +93,28 @@ contract FlightSuretyApp
 
 // region accessControl
 
-	// ----------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------
 
+    /**
+     * Get operating status of contract
+     */
     function isOperational()
-		public pure
-		returns(bool)
+        public view
+        returns (bool)
     {
-        return true;
+        return operational;
+    }
+
+    // ----------------------------------------------------------------------------
+
+    /**
+     * Sets contract operations on/off
+     * When operational mode is disabled, all write transactions except for this one will fail
+     */
+    function setOperational(bool mode) _requireContractOwner
+        external
+    {
+        operational = mode;
     }
 
 // endregion accessControl
@@ -110,16 +127,26 @@ contract FlightSuretyApp
      * Check if an airline has been approved by at least 50%
      * of approve airlines
      */
-    function airlineIsApproved(address airline)
-        internal view
+    function isAirlineApproved(address airline)
+        public view
         returns(bool)
     {
-    	(uint256 funds, uint256 totalYes) = dataContract.getAirlineData(airline);
-    	uint256 approvedAirlineNumber = dataContract.getApprovedAirlineNumber();
+        (uint256 funds, uint256 totalYes) = dataContract.getAirlineData(airline);
+        uint256 approvedAirlineNumber = dataContract.getApprovedAirlineNumber();
 
-        return(
-            totalYes >= approvedAirlineNumber.div(2)
-        );
+        // Airlines need to deposit 10 ether before being able to do anything
+        if (funds < 10 ether) {
+            return false;
+        }
+
+        // No consensus until MIN_AIRLINE_BEFORE_CONSENSUS airlines are
+        // approved
+        if (approvedAirlineNumber <= MIN_AIRLINE_BEFORE_CONSENSUS) {
+            return true;
+        }
+
+        // 50% consensus rule
+        return(totalYes >= approvedAirlineNumber.div(2));
     }
 
 	// ----------------------------------------------------------------------------
@@ -127,22 +154,21 @@ contract FlightSuretyApp
     /**
      * Add an airline to the registration queue
      */
-    function registerAirline(address airline)
+    function registerAirline(address airline) _requireIsOperational
 		external
     {
     	(uint256 funds, uint256 totalYes) = dataContract.getAirlineData(airline);
-
         require(totalYes == 0, "Airline is already registered");
 
         // Anyone can register the first airline
         if (dataContract.getApprovedAirlineNumber() == 0) {
-            dataContract.setAirlineTotalApproval(airline, 999999999); // We set the number of
             dataContract.addApprovedAirline(airline);
+            dataContract.setAirlineTotalApproval(airline, 999999999); // We set the number of
             // yes votes to a big number to make sure it always pass the 50% consensus rule
         }
         else {
             // Only an approved airline can register an new airline
-            require(airlineIsApproved(msg.sender), "Airline is not yet approved");
+            require(isAirlineApproved(msg.sender), "Airline is not yet approved");
             dataContract.addAirline(airline);
             dataContract.registerAirlineApprover(airline, msg.sender);
             dataContract.addOneAirlineApproval(airline);
@@ -159,13 +185,14 @@ contract FlightSuretyApp
     function approveAirlineCandidate(address airline)
         external
     {
-        require(dataContract.getApprovedAirlineNumber() >= 4, "Voting system starts with at least 4 airlines");
+        require(dataContract.getApprovedAirlineNumber() >= MIN_AIRLINE_BEFORE_CONSENSUS,
+            "Consensus is not yet triggered, register more airlines");
 
         dataContract.registerAirlineApprover(airline, msg.sender);
         dataContract.addOneAirlineApproval(airline);
         emit AirlineVotedApproval(airline, msg.sender);
 
-        if (airlineIsApproved(airline)) {
+        if (isAirlineApproved(airline)) {
             emit AirlineApproved(airline);
         }
     }

@@ -4,9 +4,15 @@ var mnemonic = "scan mass giant inject receive runway thumb super attack syrup a
 module.exports = {
 	networks: {
         development: {
-			provider: function() {
-				return new HDWalletProvider(mnemonic, "http://127.0.0.1:8545/", 0, 50);
-			},
+            // Create invalid nonce issues
+            // provider: function() {
+            //     return new HDWalletProvider(
+            //         mnemonic,
+            //         "http://127.0.0.1:8545/",
+            //         0,
+            //         50
+            //     );
+            // },
             host: "127.0.0.1",     // Localhost (default: none)
             port: 8545,            // Standard Ethereum port (default: none)
             network_id: "*",       // Any network (default: none)
@@ -15,7 +21,7 @@ module.exports = {
 	},
 	compilers: {
 		solc: {
-			version: "^0.4.24"
+			version: "0.4.25"
 		}
 	}
 };

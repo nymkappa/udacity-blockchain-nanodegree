@@ -44,6 +44,8 @@ contract FlightSuretyData
     	public
     {
         contractOwner = msg.sender;
+        // Authorize the owner to call any function
+        authorizedContracts[msg.sender] = true;
     }
 
 // region modifiers
@@ -66,7 +68,7 @@ contract FlightSuretyData
     /**
      * Modifier that requires the "ContractOwner" account to be the function caller
      */
-    modifier requireContractOwner()
+    modifier _requireContractOwner()
     {
         require(msg.sender == contractOwner, "Caller is not contract owner");
         _;
@@ -77,7 +79,7 @@ contract FlightSuretyData
     /**
      * Modifier that requires the "ContractOwner" account to be the function caller
      */
-    modifier requireIsAuthorized()
+    modifier _requireIsAuthorized()
     {
         require(authorizedContracts[msg.sender] == true, "Caller is not authorized");
         _;
@@ -94,7 +96,7 @@ contract FlightSuretyData
      */
     function isOperational()
 		public view
-		returns(bool)
+		returns (bool)
     {
         return operational;
     }
@@ -105,7 +107,7 @@ contract FlightSuretyData
      * Sets contract operations on/off
      * When operational mode is disabled, all write transactions except for this one will fail
      */
-    function setOperational(bool mode)
+    function setOperational(bool mode) _requireContractOwner
 		external
     {
         operational = mode;
@@ -116,9 +118,8 @@ contract FlightSuretyData
     /**
      * Authorize a contract to call this data contract
      */
-    function authorize(address appContract)
+    function authorize(address appContract) _requireContractOwner
     	external
-    	requireContractOwner
     {
     	authorizedContracts[appContract] = true;
     }
@@ -128,11 +129,20 @@ contract FlightSuretyData
     /**
      * Deauthorize a contract to call this data contract
      */
-    function deauthorize(address appContract)
+    function deauthorize(address appContract) _requireContractOwner
     	external
-    	requireContractOwner
+    	_requireContractOwner
     {
     	delete authorizedContracts[appContract];
+    }
+
+    // ----------------------------------------------------------------------------
+
+    function isAuthorizedAppContract(address appContract)
+        external view
+        returns (bool)
+    {
+        return authorizedContracts[appContract];
     }
 
 // endregion accesscontrol
@@ -142,53 +152,61 @@ contract FlightSuretyData
 	// ----------------------------------------------------------------------------
 	// Setters
 
-    function addAirline(address airline) _requireIsOperational
+    function addAirline(address airline)
+        _requireIsOperational _requireIsAuthorized
         external
     {
         candidateAirlines.push(airline);
     }
 
     function addApprovedAirline(address airline)
+        _requireIsOperational _requireIsAuthorized
         external
     {
         approvedAirlines.push(airline);
     }
 
     function registerAirlineApprover(address airline, address voter)
+        _requireIsOperational _requireIsAuthorized
         external
     {
         airlinesData[airline].approvers[voter] = 1;
     }
 
     function addOneAirlineApproval(address airline)
+        _requireIsOperational _requireIsAuthorized
         external
     {
         airlinesData[airline].totalYes = airlinesData[airline].totalYes.add(1);
     }
 
     function setAirlineTotalApproval(address airline, uint256 totalYes)
+        _requireIsOperational _requireIsAuthorized
         external
     {
         airlinesData[airline].totalYes = totalYes;
     }
 
-	// ----------------------------------------------------------------------------
-	// Getter
-
     function addAirlineFund(address airline, uint256 amount)
+        _requireIsOperational _requireIsAuthorized
         public payable
     {
         airlinesData[airline].funds = airlinesData[airline].funds.add(amount);
     }
 
-    function getApprovedAirlineNumber() _requireIsOperational
+    // ----------------------------------------------------------------------------
+    // Getter
+
+    function getApprovedAirlineNumber()
+        _requireIsOperational _requireIsAuthorized
     	external view
-    	returns(uint256)
+    	returns (uint256)
     {
     	return approvedAirlines.length;
     }
 
    	function getCandidateAirlines()
+        _requireIsOperational _requireIsAuthorized
    		external view
 		returns (address[])
    	{
@@ -196,6 +214,7 @@ contract FlightSuretyData
    	}
 
    	function getApprovedAirlines()
+        _requireIsOperational _requireIsAuthorized
    		external view
 		returns (address[])
    	{
@@ -203,15 +222,17 @@ contract FlightSuretyData
    	}
 
     function getAirlineData(address airline)
+        _requireIsOperational _requireIsAuthorized
     	external view
-    	returns(uint256, uint256)
+    	returns (uint256, uint256)
     {
     	return (airlinesData[airline].funds, airlinesData[airline].totalYes);
     }
 
     function getAirlineApprover(address airline, address approver)
+        _requireIsOperational _requireIsAuthorized
     	external view
-    	returns(uint8)
+    	returns (uint8)
     {
     	return (airlinesData[airline].approvers[approver]);
     }
@@ -226,6 +247,7 @@ contract FlightSuretyData
      * Update insuree deposit for a flight
      */
     function updateCustomerInsurance(bytes32 insureeKey, uint256 amount)
+        _requireIsOperational _requireIsAuthorized
     	external view
     {
         customerInsurance[insureeKey].add(amount);
@@ -237,6 +259,7 @@ contract FlightSuretyData
      * Add withdrawable fund to the customer account
      */
     function creditCustomersBalance(address customer, uint256 amount)
+        _requireIsOperational _requireIsAuthorized
         external
     {
         customerBalance[customer] = amount;
@@ -249,7 +272,8 @@ contract FlightSuretyData
      *
      */
     function pay()
-        external pure
+        _requireIsOperational _requireIsAuthorized
+        external view
     {
     }
 

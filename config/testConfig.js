@@ -5,6 +5,8 @@ var FlightSuretyData = artifacts.require("FlightSuretyData")
 var Config = async function(accounts) {
 
 	// Deploy contracts
+    let owner = accounts[0]
+    let forbidden = accounts[20]
     let flightSuretyData = await FlightSuretyData.new()
     let flightSuretyApp = await FlightSuretyApp.new(flightSuretyData.address)
 
@@ -12,6 +14,8 @@ var Config = async function(accounts) {
     let candidate1 = '0xfb239dfb6900b8f96a142704f96892a62448b36d'
 
     return {
+        owner: owner,
+        forbidden: forbidden,
         flightSuretyData: flightSuretyData,
         flightSuretyApp: flightSuretyApp,
         defaultAirline: defaultAirline,

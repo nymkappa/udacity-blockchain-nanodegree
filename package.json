@@ -11,7 +11,8 @@
     "test": "truffle test ./test/flightSurety.js",
     "dapp": "webpack-dev-server --mode development --config webpack.config.dapp.js",
     "dapp:prod": "webpack --mode production  --config webpack.config.dapp.js",
-    "server": "rm -rf ./build/server && webpack --config webpack.config.server.js"
+    "server": "rm -rf ./build/server && webpack --config webpack.config.server.js",
+    "ganache": "ganache-cli -a 30 -e 1000 -m 'scan mass giant inject receive runway thumb super attack syrup aware gown'"
   },
   "author": "Nik Kalyani <nik@kalyani.com> https://www.kalyani.com",
   "devDependencies": {
