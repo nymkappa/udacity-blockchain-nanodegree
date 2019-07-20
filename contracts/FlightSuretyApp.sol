@@ -33,7 +33,7 @@ contract FlightSuretyApp
 
     // ----------------------------------------------------------------------------
 
-    event CustomerUpdateInsurance(address customer, uint256 amount, bytes flight);
+    event CustomerUpdateInsurance(address customer, uint256 amount, string flight);
     event AirlineRegistered(address airline);
     event AirlineApproved(address airline);
     event AirlineVotedApproval(address airline, address voter);
@@ -80,12 +80,24 @@ contract FlightSuretyApp
     // ----------------------------------------------------------------------------
 
     /**
+     * Only candidate airline can deposit funds
+     */
+    modifier _requireIsRegistered()
+    {
+        (uint256 funds, uint256 totalYes) = dataContract.getAirlineData(msg.sender);
+        require(totalYes >= 1, "Airline is not registered");
+        _;
+    }
+
+    // ----------------------------------------------------------------------------
+
+    /**
      * Only registered airline can execute this code
      */
-    modifier _requireIsAuthorizedAirline(address airline)
+    modifier _requireIsApprovedAirline()
     {
         // Requires at least 50% of approval from other airlines
-        require(isAirlineApproved(airline), "Airline is not yet approved");
+        require(isAirlineApproved(msg.sender), "Airline is not yet approved");
         _;
     }
 
@@ -162,6 +174,7 @@ contract FlightSuretyApp
 
         // Anyone can register the first airline
         if (dataContract.getApprovedAirlineNumber() == 0) {
+            dataContract.addCandidateAirline(airline);
             dataContract.addApprovedAirline(airline);
             dataContract.setAirlineTotalApproval(airline, 999999999); // We set the number of
             // yes votes to a big number to make sure it always pass the 50% consensus rule
@@ -169,7 +182,7 @@ contract FlightSuretyApp
         else {
             // Only an approved airline can register an new airline
             require(isAirlineApproved(msg.sender), "Airline is not yet approved");
-            dataContract.addAirline(airline);
+            dataContract.addCandidateAirline(airline);
             dataContract.registerAirlineApprover(airline, msg.sender);
             dataContract.addOneAirlineApproval(airline);
         }
@@ -183,10 +196,14 @@ contract FlightSuretyApp
      * Approve an airline candidate
      */
     function approveAirlineCandidate(address airline)
+        _requireIsOperational _requireIsApprovedAirline
         external
     {
         require(dataContract.getApprovedAirlineNumber() >= MIN_AIRLINE_BEFORE_CONSENSUS,
             "Consensus is not yet triggered, register more airlines");
+
+        uint8 vote = dataContract.getAirlineApprover(airline, msg.sender);
+        require(vote == 0, 'Airline has already voted for this candidate');
 
         dataContract.registerAirlineApprover(airline, msg.sender);
         dataContract.addOneAirlineApproval(airline);
@@ -203,8 +220,8 @@ contract FlightSuretyApp
      * Add fund to the airline balance
      */
     function addAirlineFund()
+        _requireIsRegistered
         external payable
-        _requireIsAuthorizedAirline(msg.sender)
     {
         dataContract.addAirlineFund(msg.sender, msg.value);
     	(uint256 funds, uint256 totalYes) = dataContract.airlinesData(msg.sender);
@@ -221,7 +238,7 @@ contract FlightSuretyApp
      * When a flight is delayed because of the airline, the customer receives
      * insurance_balance x REFUND_PERCENTAGE
      */
-    function _refundCustomer(address customer, bytes flight)
+    function _refundCustomer(address customer, string flight)
         internal view
     {
         bytes32 insureeKey = bytes32(getUserInsureeKey(customer, flight));
@@ -240,7 +257,8 @@ contract FlightSuretyApp
     /**
      * A customer can buy and deposit funds into an insurance fund
      */
-    function updateCustomerInsurance(bytes flight)
+    function updateCustomerInsurance(string flight)
+        _requireIsOperational
         external payable
     {
         require(msg.value > 0, "Customer must deposit some ether");
@@ -296,8 +314,8 @@ contract FlightSuretyApp
     /**
      * Generate an unique key for an user address and flight
      */
-    function getUserInsureeKey(address user, bytes memory flight)
-        internal view
+    function getUserInsureeKey(address user, string flight)
+        public view
         returns(bytes32)
     {
         return keccak256(abi.encodePacked(toBytes(msg.sender), flight));
@@ -506,7 +524,7 @@ contract FlightSuretyData
     address[] public approvedAirlines;
     mapping(address => Airline) public airlinesData; // airline / data
 
-    function addAirline(address airline)
+    function addCandidateAirline(address airline)
         external pure;
     function addApprovedAirline(address airline)
         external pure;

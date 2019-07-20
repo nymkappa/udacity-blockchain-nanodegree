@@ -152,7 +152,7 @@ contract FlightSuretyData
 	// ----------------------------------------------------------------------------
 	// Setters
 
-    function addAirline(address airline)
+    function addCandidateAirline(address airline)
         _requireIsOperational _requireIsAuthorized
         external
     {
@@ -250,7 +250,15 @@ contract FlightSuretyData
         _requireIsOperational _requireIsAuthorized
     	external view
     {
-        customerInsurance[insureeKey].add(amount);
+        customerInsurance[insureeKey] = customerInsurance[insureeKey].add(amount);
+    }
+
+    function getCustomerInsurance(bytes32 insureeKey)
+        _requireIsOperational _requireIsAuthorized
+        external view
+        returns (uint256)
+    {
+        return customerInsurance[insureeKey];
     }
 
     // ----------------------------------------------------------------------------
@@ -263,6 +271,14 @@ contract FlightSuretyData
         external
     {
         customerBalance[customer] = amount;
+    }
+
+    function getCustomersBalance(address customer)
+        _requireIsOperational _requireIsAuthorized
+        external
+        returns (uint256)
+    {
+        return customerBalance[customer];
     }
 
     // ----------------------------------------------------------------------------

@@ -33,7 +33,7 @@ contract('FlightSuretyData', async (accounts) =>
     // ------------------------------------------------------------------------
 
     it('_requireIsAuthorized', async () => {
-        await truffleAssert.reverts(config.flightSuretyData.addAirline(
+        await truffleAssert.reverts(config.flightSuretyData.addCandidateAirline(
             config.candidate1, {from: config.forbidden}))
     })
 
@@ -78,7 +78,7 @@ contract('FlightSuretyData', async (accounts) =>
     it('Can register a candidate airline', async () => {
         let candidate = config.candidate1
 
-        await config.flightSuretyData.addAirline(candidate)
+        await config.flightSuretyData.addCandidateAirline(candidate)
         let airlines = await config.flightSuretyData.getCandidateAirlines()
         let airlineData = await config.flightSuretyData.getAirlineData(candidate)
         let funds = BigNumber(airlineData[0]).toNumber()
@@ -108,7 +108,7 @@ contract('FlightSuretyData', async (accounts) =>
         let voter = config.defaultAirline
         let candidate = config.candidate1
 
-        await config.flightSuretyData.addAirline(candidate)
+        await config.flightSuretyData.addCandidateAirline(candidate)
         await config.flightSuretyData.registerAirlineApprover(candidate, voter)
         await config.flightSuretyData.addOneAirlineApproval(candidate)
         let airlineData = await config.flightSuretyData.getAirlineData(candidate)

@@ -11,7 +11,7 @@ module.exports = function(deployer) {
             // Authorize the app contract
             instanceData.authorize(instanceApp.address)
             // Register the first airline
-            instanceData.addApprovedAirline(
+            instanceApp.registerAirline(
                 '0x1c7E225484D13D66b67183B9384Cd051fb1A6539')
 
             /**
