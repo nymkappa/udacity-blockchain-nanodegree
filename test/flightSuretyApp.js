@@ -2,14 +2,17 @@ var Test = require('../config/testConfig.js')
 const BigNumber = require('bignumber.js')
 const truffleAssert = require('truffle-assertions')
 
+var APPROVED_AIRLINE_NBR = 12
+
 // Register mutliple airline to trigger the 50% consensus rule
 let triggerConsensus = async (config, accounts) => {
-    for (var i = 10; i < 15; ++i) {
-        await config.flightSuretyData.addApprovedAirline(accounts[i]);
-        await config.flightSuretyData.addAirlineFund(accounts[i],
+    for (var i = 0; i < APPROVED_AIRLINE_NBR; ++i) {
+    	let idx = i + 10
+        await config.flightSuretyData.addApprovedAirline(accounts[idx]);
+        await config.flightSuretyData.addAirlineFund(accounts[idx],
             BigNumber('10e18').toString())
         await config.flightSuretyData.setAirlineTotalApproval(
-            accounts[i], 100)
+            accounts[idx], 100)
     }
 }
 
@@ -20,10 +23,13 @@ contract('FlightSuretyApp', async (accounts) =>
 
 	// ------------------------------------------------------------------------
 
-	before('setup contract', async () => {
+	beforeEach('setup contract', async () => {
 		config = await Test.Config(accounts)
         await config.flightSuretyData.authorize(config.flightSuretyApp.address)
         await config.flightSuretyApp.registerAirline(config.defaultAirline)
+        await config.flightSuretyData.addApprovedAirline(config.defaultAirline)
+        await config.flightSuretyData.setAirlineTotalApproval(config.defaultAirline, 1000)
+        await config.flightSuretyData.addAirlineFund(config.defaultAirline, BigNumber('10e18'))
 	})
 
     // ------------------------------------------------------------------------
@@ -46,13 +52,13 @@ contract('FlightSuretyApp', async (accounts) =>
     it('_requireIsOperational', async () => {
         await config.flightSuretyApp.setOperational(false)
         await truffleAssert.reverts(config.flightSuretyApp.registerAirline(
-            accounts[27], {from: config.defaultAirline}))
+            config.candidate3, {from: config.defaultAirline}))
 
         await config.flightSuretyApp.setOperational(true)
         await config.flightSuretyData.addAirlineFund(config.defaultAirline,
             BigNumber('15e18'))
         await truffleAssert.passes(config.flightSuretyApp.registerAirline(
-            accounts[27], {from: config.defaultAirline}))
+            config.candidate3, {from: config.defaultAirline}))
     })
 
     // ------------------------------------------------------------------------
@@ -86,7 +92,7 @@ contract('FlightSuretyApp', async (accounts) =>
             config.candidate1)
         assert.strictEqual(approved, false, 'Airline should require 10 ether deposit')
 
-        // Add approvval votes to the last candidate - Should now be approved
+        // Add approval votes to the last candidate - Should now be approved
         await config.flightSuretyData.setAirlineTotalApproval(accounts[14], 10)
         approved = await config.flightSuretyApp.isAirlineApproved(accounts[14])
         assert.strictEqual(approved, true, 'Should be approved')
@@ -112,10 +118,10 @@ contract('FlightSuretyApp', async (accounts) =>
     it('An approved airline can vote for an airline candidate approval', async () => {
         await triggerConsensus(config, accounts)
         await config.flightSuretyApp.approveAirlineCandidate(config.candidate1,
-            {from: accounts[10]})
+            {from: accounts[19]})
 
         let vote = await config.flightSuretyData.getAirlineApprover(config.candidate1,
-            accounts[10])
+            accounts[19])
         vote = BigNumber(vote).toNumber()
 
         assert.strictEqual(vote, 1, "Vote has not been properly registered")
@@ -126,20 +132,53 @@ contract('FlightSuretyApp', async (accounts) =>
     it('An approved airline cannot vote twice for an airline candidate approval', async () => {
         await triggerConsensus(config, accounts)
         await config.flightSuretyApp.approveAirlineCandidate(config.candidate1,
-            {from: accounts[11]})
+            {from: accounts[18]})
         await truffleAssert.reverts(config.flightSuretyApp.approveAirlineCandidate(
-            config.candidate1, {from: accounts[11]}))
+            config.candidate1, {from: accounts[18]}))
+    })
+
+    // ------------------------------------------------------------------------
+
+    it('Check if a candidate get approved if it gets enough votes', async () => {
+        await triggerConsensus(config, accounts)
+        let amount = BigNumber('10e18');
+
+        await config.flightSuretyApp.registerAirline(
+            config.candidate1, {from: config.defaultAirline})
+        await config.flightSuretyApp.addAirlineFund(
+            {from: config.candidate1, value: amount.toString()})
+
+    	for (var i = 0; i < APPROVED_AIRLINE_NBR; ++i) {
+    		let idx = i + 10
+    		let tx = await config.flightSuretyApp.approveAirlineCandidate(config.candidate1,
+    			{from: accounts[idx]})
+    		truffleAssert.eventEmitted(tx, 'AirlineVotedApproval')
+    		if (i > APPROVED_AIRLINE_NBR / 2) {
+    			truffleAssert.eventEmitted(tx, 'AirlineApproved')
+    		}
+
+	        let airlineData = await config.flightSuretyData.getAirlineData(
+	            config.candidate1)
+	        let funds = BigNumber(airlineData[0]).toNumber()
+	        let votes = BigNumber(airlineData[1]).toNumber()
+            let total = await config.flightSuretyData.getApprovedAirlineNumber()
+
+
+	        console.log(funds, votes, total)
+    	}
     })
 
     // ------------------------------------------------------------------------
 
     it('An airline can add fund', async () => {
         let amount = BigNumber('10e18');
+        await config.flightSuretyApp.registerAirline(
+            config.candidate1, {from: config.defaultAirline})
         await config.flightSuretyApp.addAirlineFund(
-            {from: config.candidate2, value: amount.toString()})
+            {from: config.candidate1, value: amount.toString()})
 
         let airlineData = await config.flightSuretyData.getAirlineData(
-            config.candidate2)
+            config.candidate1)
         let funds = BigNumber(airlineData[0]).toNumber()
 
         assert.strictEqual(funds.toString(), amount.toString(),
@@ -166,6 +205,10 @@ contract('FlightSuretyApp', async (accounts) =>
     // ------------------------------------------------------------------------
 
     it('Customer receive the correct refund', async () => {
+        let amount = BigNumber('1e18');
+        await config.flightSuretyApp.updateCustomerInsurance('TESTFLIGHT',
+            {from: config.customer1, value: amount.toString()})
+
         let previousBalance = await config.flightSuretyData.getCustomerBalance(
             config.customer1)
         let multiplier = await config.flightSuretyApp.REFUND_PERCENTAGE.call()

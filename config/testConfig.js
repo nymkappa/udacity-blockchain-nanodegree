@@ -14,6 +14,8 @@ var Config = async function(accounts) {
 
     let defaultAirline = accounts[20] // 0x1c7e225484d13d66b67183b9384cd051fb1a6539
     let forbidden = accounts[25] // 0xff2c59a2ec4dedabc76984ea0bdea3fd1f21eb22
+    let candidate4 = accounts[26] // 0x8981387a15c87421237c36b8c62b8a9f7673a398
+    let candidate3 = accounts[27] // 0x08ef80240ec2a47603e85f9744d0e9e5b7d35f82
     let candidate2 = accounts[28] // 0x4a9663ae6229506db1d0b2b6375839956b7549f1
     let candidate1 = accounts[29] // 0xfb239dfb6900b8f96a142704f96892a62448b36d
 
@@ -25,6 +27,8 @@ var Config = async function(accounts) {
         defaultAirline: defaultAirline,
         candidate1: candidate1,
         candidate2: candidate2,
+        candidate3: candidate3,
+        candidate4: candidate4,
         customer1: customer1
     }
 }

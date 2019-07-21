@@ -200,9 +200,9 @@ contract FlightSuretyApp
         _requireIsOperational _requireIsApprovedAirline
         external
     {
+    	require(airline != msg.sender, "You cannot vote for yourself");
         require(dataContract.getApprovedAirlineNumber() >= MIN_AIRLINE_BEFORE_CONSENSUS,
             "Consensus is not yet triggered, register more airlines");
-
         uint8 vote = dataContract.getAirlineApprover(airline, msg.sender);
         require(vote == 0, 'Airline has already voted for this candidate');
 

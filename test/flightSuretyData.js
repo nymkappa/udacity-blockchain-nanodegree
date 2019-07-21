@@ -8,7 +8,7 @@ contract('FlightSuretyData', async (accounts) =>
 
     // ------------------------------------------------------------------------
 
-    before('setup contract', async () => {
+    beforeEach('setup contract', async () => {
         config = await Test.Config(accounts)
         await config.flightSuretyData.authorize(config.flightSuretyApp.address)
         await config.flightSuretyData.addApprovedAirline(config.defaultAirline)
