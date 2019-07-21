@@ -20,16 +20,16 @@ contract FlightSuretyApp
 	// ----------------------------------------------------------------------------
 
     // Flight status codes
-    uint8 private constant STATUS_CODE_UNKNOWN = 0;
-    uint8 private constant STATUS_CODE_ON_TIME = 10;
-    uint8 private constant STATUS_CODE_LATE_AIRLINE = 20;
-    uint8 private constant STATUS_CODE_LATE_WEATHER = 30;
-    uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
-    uint8 private constant STATUS_CODE_LATE_OTHER = 50;
+    uint8 public constant STATUS_CODE_UNKNOWN = 0;
+    uint8 public constant STATUS_CODE_ON_TIME = 10;
+    uint8 public constant STATUS_CODE_LATE_AIRLINE = 20;
+    uint8 public constant STATUS_CODE_LATE_WEATHER = 30;
+    uint8 public constant STATUS_CODE_LATE_TECHNICAL = 40;
+    uint8 public constant STATUS_CODE_LATE_OTHER = 50;
 
     // Refund coefficient
-    uint8 private constant MIN_AIRLINE_BEFORE_CONSENSUS = 4;
-    uint8 private constant REFUND_PERCENTAGE = 150;
+    uint8 public constant MIN_AIRLINE_BEFORE_CONSENSUS = 4;
+    uint8 public constant REFUND_PERCENTAGE = 150;
 
     // ----------------------------------------------------------------------------
 
@@ -362,7 +362,7 @@ contract FlightSuretyApp
     uint256 public constant REGISTRATION_FEE = 1 ether;
 
     // Number of oracles that must respond for valid status
-    uint256 private constant MIN_RESPONSES = 3;
+    uint256 public constant MIN_RESPONSES = 3;
 
 
     struct Oracle {
@@ -517,6 +517,20 @@ contract FlightSuretyApp
         }
 
         return random;
+    }
+
+    // ------------------------------------------------------------------------
+
+    /**
+     * Get indexes
+     */
+    function getMyIndexes()
+        external
+        returns (uint8, uint8, uint8)
+    {
+        return (oracles[msg.sender].indexes[0],
+            oracles[msg.sender].indexes[1],
+            oracles[msg.sender].indexes[2]);
     }
 
 // endregion oracle

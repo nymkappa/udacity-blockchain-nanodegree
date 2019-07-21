@@ -168,7 +168,8 @@ contract('FlightSuretyApp', async (accounts) =>
     it('Customer receive the correct refund', async () => {
         let previousBalance = await config.flightSuretyData.getCustomerBalance(
             config.customer1)
-        let expectedBalance = BigNumber(previousBalance).multipliedBy(1.5)
+        let multiplier = await config.flightSuretyApp.REFUND_PERCENTAGE.call()
+        let expectedBalance = BigNumber(previousBalance).multipliedBy(multiplier * 0.01)
 
         await config.flightSuretyApp.testRefundCustomer(
             config.customer1, 'TESTFLIGHT', {from: config.owner})
