@@ -34,6 +34,7 @@ contract FlightSuretyApp
     // ----------------------------------------------------------------------------
 
     event CustomerUpdateInsurance(address customer, uint256 amount, string flight);
+    event CustomerRefunded(address customer, uint256 amount, string flight);
     event AirlineRegistered(address airline);
     event AirlineApproved(address airline);
     event AirlineVotedApproval(address airline, address voter);
@@ -235,21 +236,34 @@ contract FlightSuretyApp
     // ----------------------------------------------------------------------------
 
     /**
+     * Only used for automated test (only callable by the contract owner)
+     */
+    function testRefundCustomer(address customer, string flight)
+        _requireContractOwner
+        external view
+    {
+        _refundCustomer(customer, flight);
+    }
+
+    /**
      * When a flight is delayed because of the airline, the customer receives
      * insurance_balance x REFUND_PERCENTAGE
      */
     function _refundCustomer(address customer, string flight)
         internal view
     {
-        bytes32 insureeKey = bytes32(getUserInsureeKey(customer, flight));
+        bytes32 insureeKey = getUserInsureeKey(customer, flight);
         uint256 insuranceBalance = dataContract.customerInsurance(insureeKey);
         require(insuranceBalance > 0,
             "Customer did not subscribe any insurance for this flight");
 
         // If I deposit 0.5 ether to my insurance fund, I will be refunded:
         // 0.5 ether * 150 = 75; 75 / 100 = 0.75 ether
-        dataContract.creditCustomersBalance(customer,
-            insuranceBalance * REFUND_PERCENTAGE / 100);
+        uint256 mul1 = insuranceBalance.mul(REFUND_PERCENTAGE);
+        uint256 div1 = mul1.div(100);
+        dataContract.creditCustomersBalance(customer, div1);
+
+        emit CustomerRefunded(msg.sender, msg.value, flight);
     }
 
     // ----------------------------------------------------------------------------
@@ -318,7 +332,7 @@ contract FlightSuretyApp
         public view
         returns(bytes32)
     {
-        return keccak256(abi.encodePacked(toBytes(msg.sender), flight));
+        return keccak256(abi.encodePacked(toBytes(user), flight));
     }
 
     // ----------------------------------------------------------------------------

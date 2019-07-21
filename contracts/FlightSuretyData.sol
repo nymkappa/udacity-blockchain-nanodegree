@@ -248,7 +248,7 @@ contract FlightSuretyData
      */
     function updateCustomerInsurance(bytes32 insureeKey, uint256 amount)
         _requireIsOperational _requireIsAuthorized
-    	external view
+    	external
     {
         customerInsurance[insureeKey] = customerInsurance[insureeKey].add(amount);
     }
@@ -270,12 +270,12 @@ contract FlightSuretyData
         _requireIsOperational _requireIsAuthorized
         external
     {
-        customerBalance[customer] = amount;
+        customerBalance[customer] = customerBalance[customer].add(amount);
     }
 
-    function getCustomersBalance(address customer)
+    function getCustomerBalance(address customer)
         _requireIsOperational _requireIsAuthorized
-        external
+        external view
         returns (uint256)
     {
         return customerBalance[customer];
