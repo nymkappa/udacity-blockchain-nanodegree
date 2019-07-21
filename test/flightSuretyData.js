@@ -66,8 +66,8 @@ contract('FlightSuretyData', async (accounts) =>
         let airlineData = await config.flightSuretyData.getAirlineData(address)
 
         assert.strictEqual(airlines.length, 1, 'One and only one default airline should already be approved')
-        assert.strictEqual(airlines[0].toLowerCase(), address,
-            'Default airline should have been registered with address' + address)
+        assert.strictEqual(airlines[0].toLowerCase(), address.toLowerCase(),
+            'Default airline should have been registered with address ' + address)
         if (airlineData.totalYes < 999999999) {
             assert.fail('Default airline should have at least 999999999 approval votes')
         }
@@ -85,7 +85,7 @@ contract('FlightSuretyData', async (accounts) =>
         let totalYes = BigNumber(airlineData[1]).toNumber()
 
         assert.strictEqual(airlines.length, 1, 'One and only one candidate airline should be registered')
-        assert.strictEqual(airlines[0].toLowerCase(), candidate, 'Candidate airline address does not match')
+        assert.strictEqual(airlines[0].toLowerCase(), candidate.toLowerCase(), 'Candidate airline address does not match')
         assert.strictEqual(totalYes, 0, 'Candidate airline should not have any approval votes')
         assert.strictEqual(funds, 0, 'Candidate airline should not have any funds')
     })
