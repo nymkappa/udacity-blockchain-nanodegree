@@ -295,27 +295,20 @@ contract FlightSuretyData
         customerBalance[customer] = customerBalance[customer].add(amount);
     }
 
+    function debitCustomersBalance(address customer, uint256 amount)
+        _requireIsOperational _requireIsAuthorized
+        external
+    {
+    	require(customerBalance[customer].sub(amount) > 0);
+        customerBalance[customer] = customerBalance[customer].sub(amount);
+    }
+
     function getCustomerBalance(address customer)
         _requireIsOperational _requireIsAuthorized
         external view
         returns (uint256)
     {
         return customerBalance[customer];
-    }
-
-    // ----------------------------------------------------------------------------
-
-    /**
-     * Transfers eligible payout funds to insuree
-     *
-     */
-    function pay(address _receiver, uint _amount)
-        _requireIsOperational _requireIsAuthorized
-        external
-    {
-	    require(customerBalance[_receiver] >= _amount);
-	    customerBalance[_receiver] -= _amount; // Reverts if transfer fails
-	    _receiver.transfer(_amount);
     }
 
 // endregion customer

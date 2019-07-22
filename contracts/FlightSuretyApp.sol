@@ -264,7 +264,7 @@ contract FlightSuretyApp
         uint256 div1 = mul1.div(100);
         dataContract.creditCustomersBalance(customer, div1);
 
-        emit CustomerRefunded(msg.sender, msg.value, flight);
+        emit CustomerRefunded(msg.sender, div1, flight);
     }
 
     // ----------------------------------------------------------------------------
@@ -275,11 +275,15 @@ contract FlightSuretyApp
     function withdraw(uint256 _amount)
         external
     {
+    	require(_amount <= address(this).balance, "Contract does not have enough balance");
     	require(_amount > 0, "You need to withdraw some funds");
     	uint256 balance = dataContract.getCustomerBalance(msg.sender);
     	require(balance >= _amount, "Not enought balance");
 
-    	dataContract.pay(msg.sender, _amount);
+    	dataContract.debitCustomersBalance(msg.sender, _amount);
+	    address recipient = msg.sender;
+	    recipient.transfer(_amount);
+
         emit CustomerWithdraw(msg.sender, _amount);
     }
 
@@ -595,6 +599,8 @@ contract FlightSuretyData
     function updateCustomerInsurance(bytes insureeKey, uint256 amount)
         external pure;
     function creditCustomersBalance(address customer, uint256 amount)
+        public pure;
+    function debitCustomersBalance(address customer, uint256 amount)
         public pure;
     function getCustomerBalance(address customer)
     	public pure
