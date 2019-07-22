@@ -35,7 +35,8 @@ contract('Oracles', async (accounts) => {
     })
 
     it('can request flight status', async () => {
-        let flight = 'ND1309' // Course number
+        let flight = web3.utils.toHex('ND1309')
+        flight = web3.eth.abi.encodeParameter('bytes', flight)
         let timestamp = Math.floor(Date.now() / 1000)
 
         let tx = await config.flightSuretyApp.fetchFlightStatus(config.defaultAirline, flight, timestamp)

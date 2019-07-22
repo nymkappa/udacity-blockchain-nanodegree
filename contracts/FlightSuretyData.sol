@@ -17,8 +17,15 @@ contract FlightSuretyData
     /**
      * Customers
      */
-    mapping(bytes32 => uint256) public customerInsurance; // address.flight / deposit
+    mapping(bytes => uint256) private customerInsurance; // address.flight / deposit
     mapping(address => uint256) public customerBalance;
+
+    // ----------------------------------------------------------------------------
+
+    struct Flight {
+    	address[] insurees;
+    }
+    mapping(bytes => Flight) private flights;
 
     // ----------------------------------------------------------------------------
 
@@ -147,6 +154,20 @@ contract FlightSuretyData
 
 // endregion accesscontrol
 
+// region flight
+
+	// ----------------------------------------------------------------------------
+
+    function getFlightInsurees(bytes flight)
+        _requireIsOperational _requireIsAuthorized
+    	external view
+    	returns (address[])
+    {
+    	return flights[flight].insurees;
+    }
+
+// endregion flight
+
 // region airline
 
 	// ----------------------------------------------------------------------------
@@ -246,14 +267,15 @@ contract FlightSuretyData
     /**
      * Update insuree deposit for a flight
      */
-    function updateCustomerInsurance(bytes32 insureeKey, uint256 amount)
+    function updateCustomerInsurance(bytes insureeKey, uint256 amount)
         _requireIsOperational _requireIsAuthorized
     	external
     {
         customerInsurance[insureeKey] = customerInsurance[insureeKey].add(amount);
+        // flights[flight].insureeKey.push(insureeKey);
     }
 
-    function getCustomerInsurance(bytes32 insureeKey)
+    function getCustomerInsurance(bytes insureeKey)
         _requireIsOperational _requireIsAuthorized
         external view
         returns (uint256)
@@ -287,10 +309,13 @@ contract FlightSuretyData
      * Transfers eligible payout funds to insuree
      *
      */
-    function pay()
+    function pay(address _receiver, uint _amount)
         _requireIsOperational _requireIsAuthorized
-        external view
+        external
     {
+	    require(customerBalance[_receiver] >= _amount);
+	    customerBalance[_receiver] -= _amount; // Reverts if transfer fails
+	    _receiver.transfer(_amount);
     }
 
 // endregion customer

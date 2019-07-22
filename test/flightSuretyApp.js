@@ -1,13 +1,14 @@
 var Test = require('../config/testConfig.js')
 const BigNumber = require('bignumber.js')
 const truffleAssert = require('truffle-assertions')
+const web3Utils = require('web3-utils')
 
 var APPROVED_AIRLINE_NBR = 12
 
 // Register mutliple airline to trigger the 50% consensus rule
 let triggerConsensus = async (config, accounts) => {
     for (var i = 0; i < APPROVED_AIRLINE_NBR; ++i) {
-    	let idx = i + 10
+    	let idx = i + 15
         await config.flightSuretyData.addApprovedAirline(accounts[idx]);
         await config.flightSuretyData.addAirlineFund(accounts[idx],
             BigNumber('10e18').toString())
@@ -118,10 +119,10 @@ contract('FlightSuretyApp', async (accounts) =>
     it('An approved airline can vote for an airline candidate approval', async () => {
         await triggerConsensus(config, accounts)
         await config.flightSuretyApp.approveAirlineCandidate(config.candidate1,
-            {from: accounts[19]})
+            {from: config.defaultAirline})
 
         let vote = await config.flightSuretyData.getAirlineApprover(config.candidate1,
-            accounts[19])
+            config.defaultAirline)
         vote = BigNumber(vote).toNumber()
 
         assert.strictEqual(vote, 1, "Vote has not been properly registered")
@@ -144,27 +145,30 @@ contract('FlightSuretyApp', async (accounts) =>
         let amount = BigNumber('10e18');
 
         await config.flightSuretyApp.registerAirline(
-            config.candidate1, {from: config.defaultAirline})
+            config.candidate1, {from: config.defaultAirline}) // 1 vote
         await config.flightSuretyApp.addAirlineFund(
             {from: config.candidate1, value: amount.toString()})
 
     	for (var i = 0; i < APPROVED_AIRLINE_NBR; ++i) {
-    		let idx = i + 10
-    		let tx = await config.flightSuretyApp.approveAirlineCandidate(config.candidate1,
-    			{from: accounts[idx]})
-    		truffleAssert.eventEmitted(tx, 'AirlineVotedApproval')
-    		if (i > APPROVED_AIRLINE_NBR / 2) {
-    			truffleAssert.eventEmitted(tx, 'AirlineApproved')
-    		}
+    		let idx = i + 15
 
-	        let airlineData = await config.flightSuretyData.getAirlineData(
-	            config.candidate1)
-	        let funds = BigNumber(airlineData[0]).toNumber()
-	        let votes = BigNumber(airlineData[1]).toNumber()
-            let total = await config.flightSuretyData.getApprovedAirlineNumber()
-
-
-	        console.log(funds, votes, total)
+    		// idx 20 is the config.defaultAirline, so we skip it since it already voted
+    		// when registering the airline. The revert test case is already done in
+    		// another test
+    		if (idx != 20) {
+	    		let tx = await config.flightSuretyApp.approveAirlineCandidate(config.candidate1,
+	    			{from: accounts[idx]})
+	    		truffleAssert.eventEmitted(tx, 'AirlineVotedApproval')
+	    		if (i > APPROVED_AIRLINE_NBR / 2) {
+	    			truffleAssert.eventEmitted(tx, 'AirlineApproved')
+	    		}
+				// let airlineData = await config.flightSuretyData.getAirlineData(
+				//     config.candidate1)
+				// let funds = BigNumber(airlineData[0]).toNumber()
+				// let votes = BigNumber(airlineData[1]).toNumber()
+				// let total = await config.flightSuretyData.getApprovedAirlineNumber()
+				// console.log(funds, votes, total, accounts[idx])
+	    	}
     	}
     })
 
@@ -189,11 +193,14 @@ contract('FlightSuretyApp', async (accounts) =>
 
     it('A customer can buy an insurance', async () => {
         let amount = BigNumber('1e18');
-        await config.flightSuretyApp.updateCustomerInsurance('TESTFLIGHT',
+        let param = web3.utils.toHex('TESTFLIGHT')
+        param = web3.eth.abi.encodeParameter('bytes', param)
+
+        await config.flightSuretyApp.updateCustomerInsurance(param,
             {from: config.customer1, value: amount.toString()})
 
         let key = await config.flightSuretyApp.getUserInsureeKey(
-            config.customer1, 'TESTFLIGHT')
+            config.customer1, param)
         let newInsurance = await config.flightSuretyData.getCustomerInsurance(
             key)
         newInsurance = BigNumber(newInsurance)
@@ -204,24 +211,45 @@ contract('FlightSuretyApp', async (accounts) =>
 
     // ------------------------------------------------------------------------
 
-    it('Customer receive the correct refund', async () => {
-        let amount = BigNumber('1e18');
-        await config.flightSuretyApp.updateCustomerInsurance('TESTFLIGHT',
-            {from: config.customer1, value: amount.toString()})
+    it('A customer cannot deposit more than 1 ether', async () => {
+        let amount1 = BigNumber('1e17');
+        let amount2 = BigNumber('1e18');
+        let param = web3.utils.toHex('TESTFLIGHT')
+        param = web3.eth.abi.encodeParameter('bytes', param)
 
-        let previousBalance = await config.flightSuretyData.getCustomerBalance(
-            config.customer1)
+        await config.flightSuretyApp.updateCustomerInsurance(param,
+            {from: config.customer1, value: amount1.toString()})
+        await truffleAssert.reverts(config.flightSuretyApp.updateCustomerInsurance(param,
+            {from: config.customer1, value: amount2.toString()}))
+    })
+
+    // ------------------------------------------------------------------------
+
+    it('Customer receive the correct refund', async () => {
+        let amount = BigNumber('1e18')
+        let param = web3.utils.toHex('TESTFLIGHT');
+        param = web3.eth.abi.encodeParameter('bytes', param)
+
+        await config.flightSuretyApp.updateCustomerInsurance(param,
+            {from: config.customer1, value: amount.toString()})
+        let key = await config.flightSuretyApp.getUserInsureeKey(
+            config.customer1, param)
+        let insuranceValue = await config.flightSuretyData.getCustomerInsurance(key)
+        insuranceValue = BigNumber(insuranceValue)
+
         let multiplier = await config.flightSuretyApp.REFUND_PERCENTAGE.call()
-        let expectedBalance = BigNumber(previousBalance).multipliedBy(multiplier * 0.01)
+        multiplier = BigNumber(multiplier)
+        let expectedBalance = insuranceValue.multipliedBy(multiplier)
+        expectedBalance = expectedBalance.dividedBy(100)
 
         await config.flightSuretyApp.testRefundCustomer(
-            config.customer1, 'TESTFLIGHT', {from: config.owner})
+            config.customer1, param, {from: config.owner})
 
         let newBalance = await config.flightSuretyData.getCustomerBalance(
             config.customer1)
         newBalance = BigNumber(newBalance)
 
-        assert.strictEqual(expectedBalance.toString(), newBalance.toString(),
+        assert.strictEqual(newBalance.toString(), expectedBalance.toString(),
             "Refund does not match")
     })
 })

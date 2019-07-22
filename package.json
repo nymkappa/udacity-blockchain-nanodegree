@@ -8,7 +8,7 @@
   "repository": "https://github.com/techbubble/flightsurety",
   "license": "MIT",
   "scripts": {
-    "test": "truffle test ./test/flightSurety.js",
+    "test": "truffle test test/flightSuretyApp.js ; truffle test test/flightSuretyData.js ; truffle test test/oracles.js",
     "dapp": "webpack-dev-server --mode development --config webpack.config.dapp.js",
     "dapp:prod": "webpack --mode production  --config webpack.config.dapp.js",
     "server": "rm -rf ./build/server && webpack --config webpack.config.server.js",

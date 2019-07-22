@@ -33,8 +33,9 @@ contract FlightSuretyApp
 
     // ----------------------------------------------------------------------------
 
-    event CustomerUpdateInsurance(address customer, uint256 amount, string flight);
-    event CustomerRefunded(address customer, uint256 amount, string flight);
+    event CustomerUpdateInsurance(address customer, uint256 amount, bytes flight);
+    event CustomerRefunded(address customer, uint256 amount, bytes flight);
+    event CustomerWithdraw(address customer, uint256 amount);
     event AirlineRegistered(address airline);
     event AirlineApproved(address airline);
     event AirlineVotedApproval(address airline, address voter);
@@ -170,7 +171,7 @@ contract FlightSuretyApp
     function registerAirline(address airline) _requireIsOperational
 		external
     {
-    	(uint256 funds, uint256 totalYes) = dataContract.getAirlineData(airline);
+    	( , uint256 totalYes) = dataContract.getAirlineData(airline);
         require(totalYes == 0, "Airline is already registered");
 
         // Anyone can register the first airline
@@ -225,7 +226,7 @@ contract FlightSuretyApp
         external payable
     {
         dataContract.addAirlineFund(msg.sender, msg.value);
-    	(uint256 funds, uint256 totalYes) = dataContract.airlinesData(msg.sender);
+    	(uint256 funds, ) = dataContract.airlinesData(msg.sender);
         emit AirlineFundAdded(msg.sender, funds);
     }
 
@@ -238,9 +239,9 @@ contract FlightSuretyApp
     /**
      * Only used for automated test (only callable by the contract owner)
      */
-    function testRefundCustomer(address customer, string flight)
+    function testRefundCustomer(address customer, bytes flight)
         _requireContractOwner
-        external view
+        external
     {
         _refundCustomer(customer, flight);
     }
@@ -249,11 +250,11 @@ contract FlightSuretyApp
      * When a flight is delayed because of the airline, the customer receives
      * insurance_balance x REFUND_PERCENTAGE
      */
-    function _refundCustomer(address customer, string flight)
-        internal view
+    function _refundCustomer(address customer, bytes flight)
+        internal
     {
-        bytes32 insureeKey = getUserInsureeKey(customer, flight);
-        uint256 insuranceBalance = dataContract.customerInsurance(insureeKey);
+        bytes memory insureeKey = getUserInsureeKey(customer, flight);
+        uint256 insuranceBalance = dataContract.getCustomerInsurance(insureeKey);
         require(insuranceBalance > 0,
             "Customer did not subscribe any insurance for this flight");
 
@@ -269,16 +270,33 @@ contract FlightSuretyApp
     // ----------------------------------------------------------------------------
 
     /**
+     * A customer can withdraw funds
+     */
+    function withdraw(uint256 _amount)
+        external
+    {
+    	require(_amount > 0, "You need to withdraw some funds");
+    	uint256 balance = dataContract.getCustomerBalance(msg.sender);
+    	require(balance >= _amount, "Not enought balance");
+
+    	dataContract.pay(msg.sender, _amount);
+        emit CustomerWithdraw(msg.sender, _amount);
+    }
+
+    // ----------------------------------------------------------------------------
+
+    /**
      * A customer can buy and deposit funds into an insurance fund
      */
-    function updateCustomerInsurance(string flight)
+    function updateCustomerInsurance(bytes flight)
         _requireIsOperational
         external payable
     {
         require(msg.value > 0, "Customer must deposit some ether");
 
-        bytes32 insureeKey = getUserInsureeKey(msg.sender, flight);
-        require(dataContract.customerInsurance(insureeKey) <= 1 ether,
+        bytes memory insureeKey = getUserInsureeKey(msg.sender, flight);
+        uint256 insuranceBalance = dataContract.getCustomerInsurance(insureeKey);
+        require(insuranceBalance + msg.value <= 1 ether,
             "Customer insurance deposit is maximum 1 ether");
 
         dataContract.updateCustomerInsurance(insureeKey, msg.value);
@@ -292,10 +310,23 @@ contract FlightSuretyApp
     /**
      * Called after oracle has updated flight status
      */
-    function processFlightStatus(address airline, string memory flight,
-		uint256 timestamp, uint8 statusCode)
-		internal pure
+    function processFlightStatus(address /*airline*/, bytes flight,
+		uint256 /*timestamp*/, uint8 statusCode)
+		internal
     {
+    	if (statusCode != STATUS_CODE_LATE_AIRLINE) {
+    		// We are only interested in handling refunds
+    		return;
+    	}
+
+    	address[] memory insurees = dataContract.getFlightInsurees(flight);
+    	for (uint256 i = 0; i < insurees.length; ++i) {
+	        bytes memory insureeKey = getUserInsureeKey(insurees[i], flight);
+	        uint256 insuranceBalance = dataContract.getCustomerInsurance(insureeKey);
+	        if (insuranceBalance > 0) {
+	        	_refundCustomer(insurees[i], flight);
+	        }
+    	}
     }
 
 	// ----------------------------------------------------------------------------
@@ -303,7 +334,7 @@ contract FlightSuretyApp
     /**
      * Generate a request for oracles to fetch flight information
      */
-    function fetchFlightStatus(address airline, string flight,
+    function fetchFlightStatus(address airline, bytes flight,
 		uint256 timestamp)
 		external
     {
@@ -328,11 +359,11 @@ contract FlightSuretyApp
     /**
      * Generate an unique key for an user address and flight
      */
-    function getUserInsureeKey(address user, string flight)
-        public view
-        returns(bytes32)
+    function getUserInsureeKey(address user, bytes flight)
+        public pure
+        returns(bytes)
     {
-        return keccak256(abi.encodePacked(toBytes(user), flight));
+        return abi.encodePacked(toBytes(user), flight);
     }
 
     // ----------------------------------------------------------------------------
@@ -387,15 +418,15 @@ contract FlightSuretyApp
     mapping(bytes32 => ResponseInfo) private oracleResponses;
 
     // Event fired each time an oracle submits a response
-    event FlightStatusInfo(address airline, string flight, uint256 timestamp, uint8 status);
+    event FlightStatusInfo(address airline, bytes flight, uint256 timestamp, uint8 status);
 
     event OracleRegistered(address oracle, uint8 id1, uint8 id2, uint8 id3);
-    event OracleReport(address airline, string flight, uint256 timestamp, uint8 status);
+    event OracleReport(address airline, bytes flight, uint256 timestamp, uint8 status);
 
     // Event fired when flight status request is submitted
     // Oracles track this and if they have a matching index
     // they fetch data and submit a response
-    event OracleRequest(uint8 index, address airline, string flight, uint256 timestamp);
+    event OracleRequest(uint8 index, address airline, bytes flight, uint256 timestamp);
 
 
     // ------------------------------------------------------------------------
@@ -430,7 +461,7 @@ contract FlightSuretyApp
      * and matches one of the three Indexes randomly assigned to the oracle at the
      * time of registration (i.e. uninvited oracles are not welcome)
      */
-    function submitOracleResponse(uint8 index, address airline, string flight,
+    function submitOracleResponse(uint8 index, address airline, bytes flight,
     	uint256 timestamp, uint8 statusCode)
 		external
     {
@@ -457,18 +488,6 @@ contract FlightSuretyApp
             // Handle flight status as appropriate
             processFlightStatus(airline, flight, timestamp, statusCode);
         }
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * getFlightKey
-     */
-    function getFlightKey(address airline, string flight, uint256 timestamp)
-		pure internal
-		returns(bytes32)
-    {
-        return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
     // ------------------------------------------------------------------------
@@ -525,7 +544,7 @@ contract FlightSuretyApp
      * Get indexes
      */
     function getMyIndexes()
-        external
+        external view
         returns (uint8, uint8, uint8)
     {
         return (oracles[msg.sender].indexes[0],
@@ -567,18 +586,27 @@ contract FlightSuretyData
 
     // ------------- Customer ------------- //
 
-    mapping(bytes32 => uint256) public customerInsurance; // address.flight / deposit
+    mapping(bytes => uint256) public customerInsurance; // address.flight / deposit
     mapping(address => uint256) public customerBalance;
 
-    function updateCustomerInsurance(bytes32 insureeKey, uint256 amount)
+    function getCustomerInsurance(bytes insureeKey)
+        external pure
+        returns (uint256);
+    function updateCustomerInsurance(bytes insureeKey, uint256 amount)
         external pure;
     function creditCustomersBalance(address customer, uint256 amount)
         public pure;
-    function pay()
+    function getCustomerBalance(address customer)
+    	public pure
+    	returns (uint256);
+    function pay(address _receiver, uint _amount)
         public pure;
 
     // ------------- Getters ------------- //
 
+	function getFlightInsurees(bytes flight)
+    	external pure
+    	returns (address[]);
     function getApprovedAirlineNumber()
     	external pure
     	returns(uint256);
