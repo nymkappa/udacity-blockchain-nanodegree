@@ -41,8 +41,8 @@ let frontend = async () => {
 	// ----------------------------------------------------------------------------
 
     /**
-  	 * Check flight status
-  	 */
+     * [Dapp Created and Used for Contract Calls] Trigger contract to request flight status update
+     */
     $('#submit-oracle').click(() => {
         let flight = $('#flight-number').val()
         // Write transaction
@@ -75,7 +75,7 @@ let frontend = async () => {
     // ----------------------------------------------------------------------------
 
     /**
-     * User wants to subscribe an insurance
+     * [Dapp Created and Used for Contract Calls] Passenger can purchase insurance for flight
      */
     $('#insurancesubscribe').click(() => {
         let insuranceValue = parseFloat($('#insurancevalue').val())
@@ -94,7 +94,8 @@ let frontend = async () => {
     // ----------------------------------------------------------------------------
 
     /**
-     * A final flight status has been decided by Oracles
+     * [Dapp Created and Used for Contract Calls] Trigger contract to request flight status update
+     * RESPONSE
      */
 	contract.flightSuretyApp.events.FlightStatusInfo({fromBlock: 0}, (error, event) => {
 		if (error) {

@@ -71,14 +71,14 @@ contract('FlightSuretyApp', async (accounts) =>
 
     // ------------------------------------------------------------------------
 
-    it('_requireIsApprovedAirline - Only an approved airline can register a new candidate', async () => {
+    it('[Multiparty Consensus] Airline can be registered, but does not participate in contract until it submits funding of 10 ether', async () => {
         await truffleAssert.reverts(config.flightSuretyApp.registerAirline(
             config.candidate1, {from: config.candidate1}))
     })
 
     // ------------------------------------------------------------------------
 
-    it('isAirlineApproved works properly', async () => {
+    it('[Airline Ante] isAirlineApproved works properly', async () => {
         // Add fund to the default airline and it should be approved
         await config.flightSuretyData.addAirlineFund(config.defaultAirline, BigNumber('15e18'))
         let approved = await config.flightSuretyApp.isAirlineApproved(
@@ -140,7 +140,7 @@ contract('FlightSuretyApp', async (accounts) =>
 
     // ------------------------------------------------------------------------
 
-    it('Check if a candidate get approved if it gets enough votes', async () => {
+    it('[Multiparty Consensus] Registration of fifth and subsequent airlines requires multi-party consensus of 50% of registered airlines', async () => {
         await triggerConsensus(config, accounts)
         let amount = BigNumber('10e18');
 
@@ -211,7 +211,7 @@ contract('FlightSuretyApp', async (accounts) =>
 
     // ------------------------------------------------------------------------
 
-    it('A customer cannot deposit more than 1 ether', async () => {
+    it('[Passenger Payment] Passengers may pay up to 1 ether for purchasing flight insurance.', async () => {
         let amount1 = BigNumber('1e17');
         let amount2 = BigNumber('1e18');
         let param = web3.utils.toHex('TESTFLIGHT')
@@ -225,7 +225,7 @@ contract('FlightSuretyApp', async (accounts) =>
 
     // ------------------------------------------------------------------------
 
-    it('Customer receive the correct refund', async () => {
+    it('[Passenger Repayment] If flight is delayed due to airline fault, passenger receives credit of 1.5X the amount they paid', async () => {
         let amount = BigNumber('1e18')
         let param = web3.utils.toHex('TESTFLIGHT');
         param = web3.eth.abi.encodeParameter('bytes', param)
@@ -255,7 +255,7 @@ contract('FlightSuretyApp', async (accounts) =>
 
     // ------------------------------------------------------------------------
 
-    it('Customer can withdraw fund', async () => {
+    it('[Passenger Withdraw] Passenger can withdraw any funds owed to them as a result of receiving credit for insurance payout / Insurance payouts are not sent directly to passenger’s wallet', async () => {
         let amount = BigNumber('1e18');
         let param = web3.utils.toHex('TESTFLIGHT')
         param = web3.eth.abi.encodeParameter('bytes', param)

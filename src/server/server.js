@@ -1,3 +1,9 @@
+/**
+ * [Oracle Server Application] A server app has been created for simulating oracle behavior.
+ * Server can be launched with “npm run server”
+ * [Functioning Oracle] Oracle functionality is implemented in the server app.
+ */
+
 import "babel-polyfill"
 import BigNumber from "bignumber.js"
 import FlightSuretyApp from '../../build/contracts/FlightSuretyApp.json'
@@ -35,7 +41,8 @@ web3.eth.getAccounts(function(err, res) {
 })
 
 /**
- * Register some oracles
+ * [Oracle Initialization] Upon startup, 20+ oracles are registered and
+ * their assigned indexes are persisted in memory
  */
 const registerOracles = async () => {
 	let maxOracleNumber = 30
@@ -88,7 +95,9 @@ const onOracleRegistered = (error, event) => {
 }
 
 /**
- * App request flight status update from Oracles
+ * [Oracle Updates] Update flight status requests from client Dapp result
+ * in OracleRequest event emitted by Smart Contract that is captured by server
+ * (displays on console and handled in code)
  */
 const onOracleRequest = (error, event) => {
 	if (error) {
@@ -103,6 +112,13 @@ const onOracleRequest = (error, event) => {
 		event.returnValues.timestamp
 	)
 
+	/**
+	 * [Oracle Functionality] Server will loop through all registered oracles,
+	 * identify those oracles for which the OracleRequest event applies,
+	 * and respond by calling into FlightSuretyApp contract with random status code of
+	 * Unknown (0), On Time (10) or Late Airline (20), Late Weather (30), Late Technical (40),
+	 * or Late Other (50)
+	 */
 	oracles.forEach(async (oracle) => { // Find Oracles which match the requested index
 		if (oracle.indexes.indexOf(index) !== -1) { // We have a match
 			console.log('Match oracle:', oracle.address, oracle.indexes)

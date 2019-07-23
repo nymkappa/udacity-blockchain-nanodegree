@@ -1,3 +1,8 @@
+/**
+ * [Smart Contract Seperation] Smart Contract code is separated into multiple contracts:
+ * FlightSuretyApp.sol for app logic and oracles code
+ */
+
 pragma solidity ^0.4.25;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -14,6 +19,10 @@ contract FlightSuretyApp
     // ----------------------------------------------------------------------------
 
     address private contractOwner; // Account used to deploy contract
+	/**
+	 * [Operational status control is implemented in contracts]
+	 * Students has implemented operational status control.
+	 */
     bool private operational = true; // Blocks all state changes throughout the contract if false
     FlightSuretyData public dataContract; // Data contract
 
@@ -57,11 +66,10 @@ contract FlightSuretyApp
 
     // ----------------------------------------------------------------------------
 
-    /**
-    * Modifier that requires the "operational" boolean variable to be "true"
-    * This is used on all state changing functions to pause the contract in
-    * the event there is an issue that needs to be fixed
-    */
+	/**
+	 * [Operational status control is implemented in contracts]
+	 * Students has implemented operational status control.
+	 */
     modifier _requireIsOperational()
     {
         require(operational, "Contract is currently not operational");
@@ -109,9 +117,10 @@ contract FlightSuretyApp
 
     // ----------------------------------------------------------------------------
 
-    /**
-     * Get operating status of contract
-     */
+	/**
+	 * [Operational status control is implemented in contracts]
+	 * Students has implemented operational status control.
+	 */
     function isOperational()
         public view
         returns (bool)
@@ -121,10 +130,10 @@ contract FlightSuretyApp
 
     // ----------------------------------------------------------------------------
 
-    /**
-     * Sets contract operations on/off
-     * When operational mode is disabled, all write transactions except for this one will fail
-     */
+	/**
+	 * [Operational status control is implemented in contracts]
+	 * Students has implemented operational status control.
+	 */
     function setOperational(bool mode) _requireContractOwner
         external
     {
@@ -225,6 +234,8 @@ contract FlightSuretyApp
         _requireIsRegistered
         external payable
     {
+    	require(msg.value > 0, "You need to withdraw some funds");
+
         dataContract.addAirlineFund(msg.sender, msg.value);
     	(uint256 funds, ) = dataContract.airlinesData(msg.sender);
         emit AirlineFundAdded(msg.sender, funds);

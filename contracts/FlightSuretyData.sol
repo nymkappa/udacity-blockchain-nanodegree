@@ -1,3 +1,8 @@
+/**
+ * [Smart Contract Seperation] Smart Contract code is separated into multiple contracts:
+ * FlightSuretyData.sol for data persistence
+ */
+
 pragma solidity ^0.4.25;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -9,6 +14,10 @@ contract FlightSuretyData
 	// ----------------------------------------------------------------------------
 
     address private contractOwner; // Account used to deploy contract
+	/**
+	 * [Operational status control is implemented in contracts]
+	 * Students has implemented operational status control.
+	 */
     bool private operational = true; // Blocks all state changes throughout the contract if false
     mapping(address => bool) authorizedContracts; // Only allow a set of contracts to call this contract
 
@@ -59,11 +68,10 @@ contract FlightSuretyData
 
 	// ----------------------------------------------------------------------------
 
-    /**
-     * Modifier that requires the "operational" boolean variable to be "true"
-     * This is used on all state changing functions to pause the contract in
-     * the event there is an issue that needs to be fixed
-     */
+	/**
+	 * [Operational status control is implemented in contracts]
+	 * Students has implemented operational status control.
+	 */
     modifier _requireIsOperational()
     {
         require(operational, "Contract is currently not operational");
@@ -98,9 +106,10 @@ contract FlightSuretyData
 
 	// ----------------------------------------------------------------------------
 
-    /**
-     * Get operating status of contract
-     */
+	/**
+	 * [Operational status control is implemented in contracts]
+	 * Students has implemented operational status control.
+	 */
     function isOperational()
 		public view
 		returns (bool)
@@ -110,10 +119,10 @@ contract FlightSuretyData
 
 	// ----------------------------------------------------------------------------
 
-    /**
-     * Sets contract operations on/off
-     * When operational mode is disabled, all write transactions except for this one will fail
-     */
+	/**
+	 * [Operational status control is implemented in contracts]
+	 * Students has implemented operational status control.
+	 */
     function setOperational(bool mode) _requireContractOwner
 		external
     {
