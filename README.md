@@ -11,6 +11,8 @@ To install, download or clone the repo, then:
 `npm install`
 `truffle compile`
 
+You may have to add `./node_modules/.bin` in your PATH environment as well.
+
 ## Develop Client
 
 To run truffle tests:
