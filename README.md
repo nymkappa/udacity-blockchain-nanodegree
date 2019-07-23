@@ -15,10 +15,12 @@ To install, download or clone the repo, then:
 
 To run truffle tests:
 
+`npm run ganache`
 `npm run test`
 
 To use the dapp:
 
+`npm run ganache`
 `truffle migrate --reset`
 `npm run dapp`
 
@@ -28,6 +30,7 @@ To view dapp:
 
 ## Develop Server
 
+`npm run ganache`
 `npm run server`
 
 ## Deploy
