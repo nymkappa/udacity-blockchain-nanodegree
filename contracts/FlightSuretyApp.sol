@@ -314,7 +314,7 @@ contract FlightSuretyApp
         require(insuranceBalance + msg.value <= 1 ether,
             "Customer insurance deposit is maximum 1 ether");
 
-        dataContract.updateCustomerInsurance(insureeKey, msg.value);
+        dataContract.updateCustomerInsurance(insureeKey, msg.value, flight, msg.sender);
         emit CustomerUpdateInsurance(msg.sender, msg.value, flight);
     }
 
@@ -325,19 +325,22 @@ contract FlightSuretyApp
     /**
      * Called after oracle has updated flight status
      */
-    function processFlightStatus(address /*airline*/, bytes flight,
-		uint256 /*timestamp*/, uint8 statusCode)
+    function processFlightStatus(address airline, bytes flight,
+		uint256 timestamp, uint8 statusCode)
 		internal
     {
+       	emit FlightStatusInfo(airline, flight, timestamp, statusCode);
     	if (statusCode != STATUS_CODE_LATE_AIRLINE) {
     		// We are only interested in handling refunds
     		return;
     	}
 
     	address[] memory insurees = dataContract.getFlightInsurees(flight);
+       	emit FlightStatusProcess(airline, flight, timestamp, statusCode, insurees);
     	for (uint256 i = 0; i < insurees.length; ++i) {
 	        bytes memory insureeKey = getUserInsureeKey(insurees[i], flight);
 	        uint256 insuranceBalance = dataContract.getCustomerInsurance(insureeKey);
+       		emit InsuranceProcess(insurees[i], flight, insuranceBalance);
 	        if (insuranceBalance > 0) {
 	        	_refundCustomer(insurees[i], flight);
 	        }
@@ -434,6 +437,8 @@ contract FlightSuretyApp
 
     // Event fired each time an oracle submits a response
     event FlightStatusInfo(address airline, bytes flight, uint256 timestamp, uint8 status);
+    event FlightStatusProcess(address airline, bytes flight, uint256 timestamp, uint8 status, address[]);
+    event InsuranceProcess(address insuree, bytes flight, uint256 balance);
 
     event OracleRegistered(address oracle, uint8 id1, uint8 id2, uint8 id3);
     event OracleReport(address airline, bytes flight, uint256 timestamp, uint8 status);
@@ -496,10 +501,7 @@ contract FlightSuretyApp
         // oracles respond with the *** same *** information
         emit OracleReport(airline, flight, timestamp, statusCode);
         if (oracleResponses[key].responses[statusCode].length >= MIN_RESPONSES) {
-
         	oracleResponses[key].isOpen = false;
-            emit FlightStatusInfo(airline, flight, timestamp, statusCode);
-
             // Handle flight status as appropriate
             processFlightStatus(airline, flight, timestamp, statusCode);
         }
@@ -607,7 +609,8 @@ contract FlightSuretyData
     function getCustomerInsurance(bytes insureeKey)
         external pure
         returns (uint256);
-    function updateCustomerInsurance(bytes insureeKey, uint256 amount)
+    function updateCustomerInsurance(bytes insureeKey, uint256 amount, bytes flight,
+    	address customer)
         external pure;
     function creditCustomersBalance(address customer, uint256 amount)
         public pure;

@@ -2,6 +2,8 @@
 
 import Contract from './contract'
 import './flightsurety.css'
+import Web3 from 'web3'
+import Web3Utils from 'web3-utils'
 
 // ----------------------------------------------------------------------------
 
@@ -19,25 +21,6 @@ let frontend = async () => {
     	$('#status').text(result === true ? "OPERATIONAL ✔" : "OFFLINE X")
     })
 
-    // ----------------------------------------------------------------------------
-
-    /**
-     * Check if the contract is operational
-     */
-    $('.nav-link').click((e) => {
-    	$('.nav-link').removeClass('active')
-    	$('#'+e.currentTarget.id).addClass('active')
-
-        $('.contentdiv').hide()
-        if ('flight' === e.currentTarget.id) {
-            $('#flights-div').show()
-        } else if ('airline' === e.currentTarget.id) {
-        	$('#airlines-div').show()
-        } else if ('customer' === e.currentTarget.id) {
-            $('#customers-div').show()
-    	}
-    })
-
 	// ----------------------------------------------------------------------------
 
     /**
@@ -45,12 +28,19 @@ let frontend = async () => {
      */
     $('#submit-oracle').click(() => {
         let flight = $('#flight-number').val()
+
         // Write transaction
         contract.fetchFlightStatus(flight,
             (error, result) => {
+				result.flight = Web3Utils.toAscii(result.flight)
+				result.flight = result.flight.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, '')
+				result.flight = result.flight.replace(' ', '')
+				result.airline = result.airline.toLowerCase()
+
             	if ($('#' + result.airline + result.flight).length > 0) {
             		$('#' + result.airline + result.flight).remove()
             	}
+
             	logEntry(result)
             }
         )
@@ -67,7 +57,6 @@ let frontend = async () => {
         contract.registerAirline(airline,
             (error, result) => {
             	console.log(error, result)
-            	// logEntry(result)
             }
         )
     })
@@ -94,38 +83,75 @@ let frontend = async () => {
     // ----------------------------------------------------------------------------
 
     /**
+     * [Passenger Withdraw] Passenger can withdraw any funds owed to them as a result of receiving credit for insurance payout
+     */
+    $('#withdraw').click(() => {
+        let withdrawvalue = parseFloat($('#withdrawvalue').val())
+        contract.withdraw(withdrawvalue,
+            (error, result) => {
+                if (error) {
+                    console.log(error)
+                }
+                console.log(result)
+            }
+        )
+    })
+
+    // ----------------------------------------------------------------------------
+
+    /**
      * [Dapp Created and Used for Contract Calls] Trigger contract to request flight status update
      * RESPONSE
      */
 	contract.flightSuretyApp.events.FlightStatusInfo({fromBlock: 0}, (error, event) => {
+		console.log('event FlightStatusInfo', event.returnValues)
 		if (error) {
 			return console.log(error)
 		} else {
 			let statusStr = 'Unknown'
 			switch (event.returnValues.status) {
-				case '10': statusStr = 'On time'; break
-				case '20': statusStr = 'Late (Airline issue)'; break
-				case '30': statusStr = 'Late (Weather)'; break
-				case '40': statusStr = 'Late (Technical issue)'; break
-				case '50': statusStr = 'Late (Other)'; break
+				case 10: statusStr = 'On time'; break
+				case 20: statusStr = 'Late (Airline issue)'; break
+				case 30: statusStr = 'Late (Weather)'; break
+				case 40: statusStr = 'Late (Technical issue)'; break
+				case 50: statusStr = 'Late (Other)'; break
 			}
-			$('#' + event.returnValues.airline + event.returnValues.flight)
-				.find('#status').text(statusStr + ' [' + event.returnValues.status + ']')
+
+			let flight = Web3Utils.toAscii(event.returnValues.flight)
+			flight = flight.replace(/[^A-Za-z 0-9 \.,\?""!@#\$%\^&\*\(\)-_=\+;:<>\/\\\|\}\{\[\]`~]*/g, '')
+			flight = flight.replace(' ', '')
+
+			console.log(statusStr, '#' + event.returnValues.airline.toLowerCase() + flight)
+			$('#' + event.returnValues.airline.toLowerCase() + flight).find('#status').text(statusStr + ' [' + event.returnValues.status + ']')
 		}
 	})
-
-    // ----------------------------------------------------------------------------
-
-    /**
-     * A customer bought an insurance
-     */
-    // contract.flightSuretyApp.events.BuyInsurance({fromBlock: 0}, (error, event) => {
-    //     if (error) {
-    //         return console.log(error)
-    //     } else {
-    //         console.log(event.returnValues)
-    //     }
-    // })
+    contract.flightSuretyApp.events.CustomerUpdateInsurance({fromBlock: 0}, (error, event) => {
+    	console.log('event CustomerUpdateInsurance', error, event)
+    })
+	contract.flightSuretyApp.events.CustomerRefunded({fromBlock: 0}, (error, event) => {
+		console.log('event CustomerRefunded', error, event)
+	})
+	contract.flightSuretyApp.events.CustomerWithdraw({fromBlock: 0}, (error, event) => {
+		console.log('event CustomerWithdraw', error, event)
+	})
+    contract.flightSuretyApp.events.AirlineRegistered({fromBlock: 0}, (error, event) => {
+    	console.log('event AirlineRegistered', error, event)
+    })
+    contract.flightSuretyApp.events.AirlineApproved({fromBlock: 0}, (error, event) => {
+    	console.log('event AirlineApproved', error, event)
+    })
+    contract.flightSuretyApp.events.AirlineVotedApproval({fromBlock: 0}, (error, event) => {
+    	console.log('event AirlineVotedApproval', error, event)
+    })
+    contract.flightSuretyApp.events.AirlineFundAdded({fromBlock: 0}, (error, event) => {
+    	console.log('event AirlineFundAdded', error, event)
+    })
+    contract.flightSuretyApp.events.FlightStatusProcess({fromBlock: 0}, (error, event) => {
+    	console.log('event FlightStatusProcess', error, event)
+    })
+	contract.flightSuretyApp.events.InsuranceProcess({fromBlock: 0}, (error, event) => {
+    	console.log('event InsuranceProcess', error, event)
+    })
 }
 
 // ----------------------------------------------------------------------------

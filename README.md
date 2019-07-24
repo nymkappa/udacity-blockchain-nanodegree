@@ -26,6 +26,10 @@ To use the dapp:
 `truffle migrate --reset`
 `npm run dapp`
 
+You can import accounts into Metamask using the `accounts` file in the root folder.
+The first registered airline (during deployment) uses the private key:
+`0x133e7da4cce264a036f3119e1a00f5264d4684fa0ed7f70c0b1b30d81a23bee7`
+
 To view dapp:
 
 `http://localhost:8000`

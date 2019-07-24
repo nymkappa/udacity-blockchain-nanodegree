@@ -25,13 +25,6 @@
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
 			</button>
-			<div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-				<div class="navbar-nav">
-					<a class="nav-item nav-link active" id="airline" href="#airline">Airlines</a>
-					<a class="nav-item nav-link" id="flight" href="#flight">Flights</a>
-					<a class="nav-item nav-link" id="customer" href="#customer">Customers</a>
-				</div>
-			</div>
 	        <div class='field topbottombar'>OPERATIONAL STATUS</div>
 	        <div class='field-value' id='status'></div>
 		</nav>
@@ -57,61 +50,10 @@
             </section>
         </main>
 
-        <!-- Fund an airline -->
-        <main id="airlines-div" class="container first contentdiv">
-            <section>
-                <h2>Fund an airline</h2>
-                <div class="row top-20">
-                    <input type='number' length=6 class='col-sm-4' step='1'
-                        min='1' id='airline-deposit' placeholder='Deposit (ether)'></input>
-                    <btn class="btn btn-primary col-sm-2" id='fund-flight'>Add fund</btn>
-                </div>
-            </section>
-        </main>
-
-        <!-- FLIGHTS ------------------------------------------------------------->
-        <div id='flights-div' style="display:none" class='contentdiv'>
-
-		    <!-- Fetch flight -->
-		    <main id="oracles" class="container">
-		    	<section>
-		    		<h2>Check flight status</h2>
-		    		<h5>Check a flight status and trigger refunds in needed</h5>
-
-		    		<!-- Controls -->
-			        <div class="row top-20">
-			            <select id='flight-number' class='custom-select col-sm-4'>
-	                        <option value='AFY209'>AFY209 (Air France)</option>
-	                        <option value='AF32TS'>AF32TS (Air France)</option>
-	                        <option value='AFY207'>AFY207 (Air France)</option>
-	                        <option value='AKY204'>AKY204 (Air Korea)</option>
-	                        <option value='AK23ST'>AK23ST (Air Korea)</option>
-	                        <option value='AK2JAT'>AK2JAT (Air Korea)</option>
-	                        <option value='PA55DG'>PA55DG (Philippines Airline)</option>
-	                        <option value='PAY886'>PAY886 (Philippines Airline)</option>
-	                        <option value='PAY887'>PAY887 (Philippines Airline)</option>
-	                        <option value='CPY886'>CPY886 (Cebu Pacific)</option>
-	                        <option value='CPY771'>CPY771 (Cebu Pacific)</option>
-	                        <option value='CPY201'>CPY201 (Cebu Pacific)</option>
-			            </select>
-			            <btn class="btn btn-primary col-sm-2" id="submit-oracle">Submit to Oracles</btn>
-			        </div>
-			    </section>
-			</main>
-
-	        <!-- Oracle requests -->
-			<main id="requests-div" class="container">
-				<h2>Requests</h2>
-			    <section class="top-20" id='log_section'>
-			    </section>
-		    </main>
-
-		</div>
-
         <!-- CUSTOMERS ------------------------------------------------------------->
 
         <!-- Customer can subscribe an insurance -->
-        <main id="customers-div" class="container first contentdiv" style='display:none'>
+        <main id="customers-div" class="container contentdiv">
             <section class="top-20">
             <h2>Subscribe an insurance</h2>
                 <div class="row top-20">
@@ -135,7 +77,57 @@
                     <btn class="btn btn-primary col-sm-2" id='insurancesubscribe'>Subscribe</btn>
                 </div>
             </section>
+
+            <!-- withdraw -->
+            <section class="top-20">
+            <h2>Withdraw funds</h2>
+                <div class="row top-20">
+                    <input type='number' class='col-sm-4' step='0.01' max='1' min='0.01'
+                    	id='withdrawvalue' placeholder='Deposit (ether)'>
+                    </input>
+                    <btn class="btn btn-primary col-sm-2" id='withdraw'>Withdraw</btn>
+                </div>
+            </section>
         </main>
+
+        <!-- FLIGHTS ------------------------------------------------------------->
+        <div id='flights-div' class='contentdiv'>
+
+		    <!-- Fetch flight -->
+		    <main id="oracles" class="container">
+		    	<section>
+		    		<h2>Check flight status</h2>
+		    		<h5>Check a flight status and trigger refunds in needed</h5>
+
+		    		<!-- Controls -->
+			        <div class="row top-20">
+			            <select id='flight-number' class='custom-select col-sm-4'>
+	                        <option value='AFY209'>AFY209 (Air France)</option>
+	                        <option value='AF32TS'>AF32TS (Air France)</option>
+	                        <option value='AFY207'>AFY207 (Air France)</option>
+	                        <option value='AKY204'>AKY204 (Air Korea)</option>
+	                        <option value='AK23ST'>AK23ST (Air Korea)</option>
+	                        <option value='AK2JAT'>AK2JAT (Air Korea)</option>
+	                        <option value='PA55DG'>PA55DG (Philippines Airline)</option>
+	                        <option value='PAY886'>PAY886 (Philippines Airline)</option>
+	                        <option value='PAY887'>PAY887 (Philippines Airline)</option>
+	                        <option value='CPY886'>CPY886 (Cebu Pacific)</option>
+	                        <option value='CPY771'>CPY771 (Cebu Pacific)</option>
+	                        <option value='CPY201'>CPY201 (Cebu Pacific)</option>
+			            </select>
+			            <btn class="btn btn-primary col-sm-3" id="submit-oracle">Submit to Oracles</btn>
+			        </div>
+			    </section>
+			</main>
+
+	        <!-- Oracle requests -->
+			<main id="requests-div" class="container">
+				<h2>Requests</h2>
+			    <section class="top-20" id='log_section'>
+			    </section>
+		    </main>
+
+		</div>
 
 	</body>
 

@@ -60,10 +60,13 @@ export default class Contract
 
     fetchFlightStatus(flight, callback)
     {
+    	let param = Web3Utils.toHex(flight)
+    	param = this.web3.eth.abi.encodeParameter('bytes', param)
+
         let self = this
         let payload = {
-            airline: self.airlines[0],
-            flight: flight,
+            airline: '0x1c7e225484d13d66b67183b9384cd051fb1a6539',
+            flight: param,
             timestamp: Math.floor(Date.now() / 1000)
         }
 
@@ -103,18 +106,16 @@ export default class Contract
 		}
 
         let self = this
-        let payload = {
-            airline: airlineAddress,
-        }
 
-        console.log('registerAirline', payload)
+        console.log('registerAirline', airlineAddress, web3.eth.defaultAccount)
 
         self.flightSuretyApp.methods
-            .registerAirline(payload.airline)
+            .registerAirline(airlineAddress)
             .send({
-                from: '0x4de4d6f678421e38fefdce142b35b22e6a08e0a8' // Air france
+                from: '0x1c7e225484d13d66b67183b9384cd051fb1a6539',
+                gas: 200000
             }, (error, result) => {
-                callback(error, payload)
+                callback(error, result)
             })
     }
 
@@ -125,12 +126,29 @@ export default class Contract
         console.log('subscribeInsurance', flight, amount)
 
         this.flightSuretyApp.methods
-            .buy(Web3Utils.fromAscii(flight))
+            .updateCustomerInsurance(Web3Utils.asciiToHex(flight))
             .send({
-                from: this.metamaskAccountID,
-                value: Web3Utils.toWei('0.5', 'ether')
+                from: window.web3.eth.defaultAccount,
+                value: Web3Utils.toWei(amount.toString(), 'ether'),
+                gas: 2000000
             }, (error, result) => {
                 callback(error, flight)
+            })
+    }
+
+    // ----------------------------------------------------------------------------
+
+    withdraw(amount, callback)
+    {
+        console.log('withdraw', amount)
+
+        this.flightSuretyApp.methods
+            .withdraw(Web3Utils.toWei(amount.toString(), 'ether'))
+            .send({
+                from: window.web3.eth.defaultAccount,
+                gas: 200000
+            }, (error, result) => {
+                callback(error)
             })
     }
 }

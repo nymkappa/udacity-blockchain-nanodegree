@@ -30,14 +30,14 @@ let oracles = []
 /**
  * Retrieving accounts
  */
-web3.eth.getAccounts(function(err, res) {
+web3.eth.getAccounts(async function(err, res) {
     if (err) {
         console.log('Error:',err)
         return
     }
     accounts = res
     console.log(accounts)
-    registerOracles()
+    await registerOracles()
 })
 
 /**
@@ -55,7 +55,7 @@ const registerOracles = async () => {
 				'Registering Oracle:', account,
 				'Balance:', await web3.eth.getBalance(account)
 			)
-			let receipt = await flightSuretyApp.methods.registerOracle().send
+			flightSuretyApp.methods.registerOracle().send
 			({
 				from: account,
 				value: web3.utils.toWei('1', 'ether'),
@@ -64,7 +64,7 @@ const registerOracles = async () => {
 		}
 
 		catch (err) {
-			console.log(err)
+			console.log('error', err)
 		}
 	}
 }
@@ -142,7 +142,7 @@ const onOracleRequest = (error, event) => {
 			}
 
 			catch (err) {
-				console.log(err)
+				// console.log(err)
 			}
 		}
 	})

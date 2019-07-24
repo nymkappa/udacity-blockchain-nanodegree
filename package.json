@@ -39,12 +39,14 @@
     "truffle-assertions": "^0.9.1",
     "truffle-hdwallet-provider": "^1.0.2",
     "web3": "^1.0.0-beta.55",
+    "web3-utils": "^1.2.0",
     "webpack": "^4.35.2",
     "webpack-cli": "^3.3.6",
     "webpack-dev-server": "3.7.2",
     "webpack-node-externals": "1.7.2"
   },
   "dependencies": {
-    "ganache-cli": "^6.4.5"
+    "ganache-cli": "^6.4.5",
+    "rxjs": "^6.5.2"
   }
 }

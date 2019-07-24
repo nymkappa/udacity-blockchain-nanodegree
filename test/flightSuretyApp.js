@@ -198,6 +198,10 @@ contract('FlightSuretyApp', async (accounts) =>
 
         await config.flightSuretyApp.updateCustomerInsurance(param,
             {from: config.customer1, value: amount.toString()})
+       	let insurees = await config.flightSuretyData.getFlightInsurees(param,
+            {from: config.owner})
+        assert.strictEqual(insurees.length, 1,
+            "Customer insurance balance should 1 ether for TESTFLIGHT")
 
         let key = await config.flightSuretyApp.getUserInsureeKey(
             config.customer1, param)

@@ -276,12 +276,13 @@ contract FlightSuretyData
     /**
      * Update insuree deposit for a flight
      */
-    function updateCustomerInsurance(bytes insureeKey, uint256 amount)
+    function updateCustomerInsurance(bytes insureeKey, uint256 amount, bytes flight,
+    	address customer)
         _requireIsOperational _requireIsAuthorized
     	external
     {
         customerInsurance[insureeKey] = customerInsurance[insureeKey].add(amount);
-        // flights[flight].insureeKey.push(insureeKey);
+        flights[flight].insurees.push(customer);
     }
 
     function getCustomerInsurance(bytes insureeKey)

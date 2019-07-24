@@ -1,12 +1,13 @@
 const FlightSuretyApp = artifacts.require("FlightSuretyApp");
 const FlightSuretyData = artifacts.require("FlightSuretyData");
 const fs = require('fs');
+const BigNumber = require('bignumber.js')
 
 module.exports = function(deployer) {
 	deployer.deploy(FlightSuretyData)
 	.then((instanceData) => {
 		return deployer.deploy(FlightSuretyApp, FlightSuretyData.address)
-		.then((instanceApp) => {
+		.then(async (instanceApp) => {
 
             // Authorize the app contract
             instanceData.authorize(instanceApp.address)
@@ -14,8 +15,12 @@ module.exports = function(deployer) {
              * [Airline Contract Initialization]
              * First airline is registered when contract is deployed.
              */
-            instanceApp.registerAirline(
-                '0x1c7E225484D13D66b67183B9384Cd051fb1A6539')
+            let airline = '0x1c7E225484D13D66b67183B9384Cd051fb1A6539'
+	        await instanceData.addApprovedAirline(airline);
+	        await instanceData.addAirlineFund(airline,
+	            BigNumber('100e18').toString())
+	        await instanceData.setAirlineTotalApproval(
+	            airline, 100)
 
             /**
              * Save configuration for oracle server and dapp
