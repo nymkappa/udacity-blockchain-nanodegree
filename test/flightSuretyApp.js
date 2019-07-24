@@ -43,6 +43,9 @@ contract('FlightSuretyApp', async (accounts) =>
 
     // ------------------------------------------------------------------------
 
+    // Multiparty Consensus
+    // Registration of fifth and subsequent airlines requires multi-party consensus of 50% of registered airlines
+
     it('Consensus is not triggered before we reach the minimum airline number', async () => {
         await truffleAssert.reverts(config.flightSuretyApp.approveAirlineCandidate(
             config.candidate1, {from: config.defaultAirline}))
@@ -71,9 +74,18 @@ contract('FlightSuretyApp', async (accounts) =>
 
     // ------------------------------------------------------------------------
 
-    it('[Multiparty Consensus] Airline can be registered, but does not participate in contract until it submits funding of 10 ether', async () => {
+    it('[Multiparty Consensus] Only existing airline may register a new airline until there are at least four airlines registered', async () => {
         await truffleAssert.reverts(config.flightSuretyApp.registerAirline(
             config.candidate1, {from: config.candidate1}))
+    })
+
+    // ------------------------------------------------------------------------
+
+    it('[Multiparty Consensus] Only existing airline may register a new airline until there are at least four airlines registered', async () => {
+        await config.flightSuretyApp.registerAirline(
+            config.candidate1, {from: config.defaultAirline})
+        await truffleAssert.reverts(config.flightSuretyApp.registerAirline(
+            config.candidate2, {from: config.candidate1}))
     })
 
     // ------------------------------------------------------------------------

@@ -273,6 +273,8 @@ contract FlightSuretyApp
         // 0.5 ether * 150 = 75; 75 / 100 = 0.75 ether
         uint256 mul1 = insuranceBalance.mul(REFUND_PERCENTAGE);
         uint256 div1 = mul1.div(100);
+
+        // [Insurance Payouts] - Insurance payouts are not sent directly to passenger’s wallet
         dataContract.creditCustomersBalance(customer, div1);
 
         emit CustomerRefunded(msg.sender, div1, flight);
@@ -330,6 +332,9 @@ contract FlightSuretyApp
 		internal
     {
        	emit FlightStatusInfo(airline, flight, timestamp, statusCode);
+
+		// [Passenger Repayment] If flight is delayed due to airline fault, passenger receives credit of 1.5X the amount they paid
+
     	if (statusCode != STATUS_CODE_LATE_AIRLINE) {
     		// We are only interested in handling refunds
     		return;

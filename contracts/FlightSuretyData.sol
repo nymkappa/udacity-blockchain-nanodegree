@@ -304,6 +304,7 @@ contract FlightSuretyData
 
     /**
      * Add withdrawable fund to the customer account
+     * [Insurance Payouts] - Insurance payouts are not sent directly to passenger’s wallet
      */
     function creditCustomersBalance(address customer, uint256 amount)
         _requireIsOperational _requireIsAuthorized
