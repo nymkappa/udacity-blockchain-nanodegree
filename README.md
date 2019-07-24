@@ -13,6 +13,13 @@ To install, download or clone the repo, then:
 
 You may have to add `./node_modules/.bin` in your PATH environment as well.
 
+## Test everything at one
+`npm run ganache`
+`truffle migrate --reset`
+In other terminals:
+`npm run server`
+`npm run dapp`
+
 ## Develop Client
 
 To run truffle tests:
