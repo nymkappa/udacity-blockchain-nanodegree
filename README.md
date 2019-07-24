@@ -13,12 +13,25 @@ To install, download or clone the repo, then:
 
 You may have to add `./node_modules/.bin` in your PATH environment as well.
 
-## Test everything at one
+# UDACITY REVIEWER: Test everything at once
 `npm run ganache`
-`truffle migrate --reset`
+
 In other terminals:
-`npm run server`
-`npm run dapp`
+* `truffle migrate --reset`
+* `npm run server`
+* `npm run dapp`
+
+1. Go over http://localhost:8000
+2. If you are using Metamask, please allow access
+3. Open the console :) with F12
+4. Confirm you can register an airline. You should see the event in the console (event in the console).
+5. Confirm you can subscribe an insurance for a flight, with a maximum total of 1 ether in total (event in the console).
+6. Submit the status check to the Oracle, repeat until the status is 20 (event in the console).
+7. You should see a CustomerRefunded event in the console.
+8. Try to withdraw a bit less than 1.5 ether and confirm the balance was updated in your wallet.
+9. Dapp requirements should now be fullfiled.
+10. Server requirements should also be fullfiled since the dapp depends on it.
+11. For the contract requirements, I've copy/pasted the rubric text in the test description so you can find them easily.
 
 ## Develop Client
 
