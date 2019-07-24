@@ -337,12 +337,17 @@ contract FlightSuretyApp
 
     	address[] memory insurees = dataContract.getFlightInsurees(flight);
        	emit FlightStatusProcess(airline, flight, timestamp, statusCode, insurees);
+
     	for (uint256 i = 0; i < insurees.length; ++i) {
+
 	        bytes memory insureeKey = getUserInsureeKey(insurees[i], flight);
 	        uint256 insuranceBalance = dataContract.getCustomerInsurance(insureeKey);
        		emit InsuranceProcess(insurees[i], flight, insuranceBalance);
+
 	        if (insuranceBalance > 0) {
 	        	_refundCustomer(insurees[i], flight);
+		        // Reset insurance balance to 0
+		        dataContract.setCustomerInsurance(insureeKey, 0, flight, i);
 	        }
     	}
     }
@@ -611,6 +616,9 @@ contract FlightSuretyData
         returns (uint256);
     function updateCustomerInsurance(bytes insureeKey, uint256 amount, bytes flight,
     	address customer)
+        external pure;
+    function setCustomerInsurance(bytes insureeKey, uint256 amount,
+    	bytes flight, uint256 insureeIndex)
         external pure;
     function creditCustomersBalance(address customer, uint256 amount)
         public pure;

@@ -125,6 +125,8 @@ let frontend = async () => {
 			$('#' + event.returnValues.airline.toLowerCase() + flight).find('#status').text(statusStr + ' [' + event.returnValues.status + ']')
 		}
 	})
+
+	// Catch other events
     contract.flightSuretyApp.events.CustomerUpdateInsurance({fromBlock: 0}, (error, event) => {
     	console.log('event CustomerUpdateInsurance', error, event)
     })

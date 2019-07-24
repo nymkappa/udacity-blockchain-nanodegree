@@ -163,20 +163,6 @@ contract FlightSuretyData
 
 // endregion accesscontrol
 
-// region flight
-
-	// ----------------------------------------------------------------------------
-
-    function getFlightInsurees(bytes flight)
-        _requireIsOperational _requireIsAuthorized
-    	external view
-    	returns (address[])
-    {
-    	return flights[flight].insurees;
-    }
-
-// endregion flight
-
 // region airline
 
 	// ----------------------------------------------------------------------------
@@ -273,6 +259,16 @@ contract FlightSuretyData
 
 	// ----------------------------------------------------------------------------
 
+    function getFlightInsurees(bytes flight)
+        _requireIsOperational _requireIsAuthorized
+    	external view
+    	returns (address[])
+    {
+    	return flights[flight].insurees;
+    }
+
+	// ----------------------------------------------------------------------------
+
     /**
      * Update insuree deposit for a flight
      */
@@ -283,6 +279,17 @@ contract FlightSuretyData
     {
         customerInsurance[insureeKey] = customerInsurance[insureeKey].add(amount);
         flights[flight].insurees.push(customer);
+    }
+
+    function setCustomerInsurance(bytes insureeKey, uint256 amount,
+    	bytes flight, uint256 insureeIndex)
+    	_requireIsOperational _requireIsAuthorized
+    	external
+    {
+    	customerInsurance[insureeKey] = amount;
+    	if (amount <= 0) {
+    		delete flights[flight].insurees[insureeIndex];
+    	}
     }
 
     function getCustomerInsurance(bytes insureeKey)

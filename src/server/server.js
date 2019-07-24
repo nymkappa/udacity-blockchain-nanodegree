@@ -126,6 +126,8 @@ const onOracleRequest = (error, event) => {
 			let randomStatusCode = intRandom(0, 5) // Generate a random status code for each oracle
 			randomStatusCode *= 10
 
+			randomStatusCode = 20
+
 			try { // Send a random flight status to the smart contract
 				let receipt = await flightSuretyApp.methods.submitOracleResponse
 				(

@@ -125,8 +125,11 @@ export default class Contract
     {
         console.log('subscribeInsurance', flight, amount)
 
+    	let param = Web3Utils.toHex(flight)
+    	param = this.web3.eth.abi.encodeParameter('bytes', param)
+
         this.flightSuretyApp.methods
-            .updateCustomerInsurance(Web3Utils.asciiToHex(flight))
+            .updateCustomerInsurance(param)
             .send({
                 from: window.web3.eth.defaultAccount,
                 value: Web3Utils.toWei(amount.toString(), 'ether'),
