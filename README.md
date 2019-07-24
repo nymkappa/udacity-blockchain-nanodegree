@@ -26,6 +26,57 @@ To run truffle tests:
 
 `npm run ganache`
 `npm run test`
+```
+joris@DESKTOP-9TB023B:~/udacity$ npm run test
+
+> flightsurety@1.0.0 test /mnt/c/Users/joris/Documents/udacity/udacity-blockchain-nanodegree
+> truffle test test/*
+
+Compiling ./contracts/FlightSuretyApp.sol...
+Compiling ./contracts/FlightSuretyData.sol...
+Compiling ./contracts/Migrations.sol...
+Compiling ./node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol...
+
+
+  Contract: FlightSuretyApp
+    ✓ References properly flightSuretyData
+    ✓ Consensus is not triggered before we reach the minimum airline number (112ms)
+    ✓ _requireIsOperational (303ms)
+    ✓ _requireContractOwner (55ms)
+    ✓ [Multiparty Consensus] Only existing airline may register a new airline until there are at least four airlines registered (118ms)
+    ✓ [Multiparty Consensus] Only existing airline may register a new airline until there are at least four airlines registered (226ms)
+    ✓ [Airline Ante] isAirlineApproved works properly (380ms)
+    ✓ An approved airline can register an airline (276ms)
+    ✓ An approved airline can vote for an airline candidate approval (2390ms)
+    ✓ An approved airline cannot vote twice for an airline candidate approval (2059ms)
+    ✓ [Multiparty Consensus] Registration of fifth and subsequent airlines requires multi-party consensus of 50% of registered airlines (3175ms)
+    ✓ An airline can add fund (197ms)
+    ✓ A customer can buy an insurance (174ms)
+    ✓ [Passenger Payment] Passengers may pay up to 1 ether for purchasing flight insurance. (164ms)
+    ✓ [Passenger Repayment] If flight is delayed due to airline fault, passenger receives credit of 1.5X the amount they paid (271ms)
+    ✓ [Passenger Withdraw] Passenger can withdraw any funds owed to them as a result of receiving credit for insurance payout / Insurance payouts are not sent directly to passenger’s wallet (418ms)
+
+  Contract: FlightSuretyData
+    ✓ _requireIsOperational (117ms)
+    ✓ _requireContractOwner (95ms)
+    ✓ _requireIsAuthorized (55ms)
+    ✓ authorize (62ms)
+    ✓ deauthorize (62ms)
+    ✓ Has one approved airline after deployment (60ms)
+    ✓ Can register a candidate airline (83ms)
+    ✓ Can register an approved airline (62ms)
+    ✓ Can approve an airline candidature (226ms)
+    ✓ Can add fund to airline insurance balancce (66ms)
+
+  Contract: Oracles
+    ✓ can register oracles (6704ms)
+    ✓ can request flight status (4495ms)
+
+
+  28 passing (34s)
+
+joris@DESKTOP-9TB023B:~/udacity$
+```
 
 To use the dapp:
 
