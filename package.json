@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "lite-server",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "ganache": "ganache-cli -a 30 -e 1000 -m 'scan mass giant inject receive runway thumb super attack syrup aware gown'"
   },
   "keywords": [],
   "author": "pk <pkrasam@gmail.com> (https://ipfs.infura.io/ipfs/QmSXiR9Khm3yo1J67nUopvVBxFJ8YGN2fUGZ34Etr3m92x/)",
@@ -14,8 +15,13 @@
     "lite-server": "2.4.0"
   },
   "dependencies": {
+    "ganache": "^6.4.4",
+    "ganache-cli": "^6.4.4",
     "openzeppelin-solidity": "^2.2.0",
     "solc": "^0.5.2",
-    "solc-js": "^0.5.2"
+    "solc-js": "^0.5.2",
+    "truffle": "^5.0.28",
+    "truffle-assertions": "^0.9.1",
+    "truffle-hdwallet-provider": "^1.0.2",
   }
 }

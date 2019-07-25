@@ -18,11 +18,12 @@
  *
  */
 
-// const HDWalletProvider = require('truffle-hdwallet-provider');
+const HDWalletProvider = require('truffle-hdwallet-provider');
 // const infuraKey = "fj4jll3k.....";
 //
 // const fs = require('fs');
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+// Will never be published on main net, so it's safe to expose the seed :D
+const mnemonic = "scan mass giant inject receive runway thumb super attack syrup aware gown";
 
 module.exports = {
   /**
@@ -47,6 +48,14 @@ module.exports = {
       port: 8545,            // Standard Ethereum port (default: none)
       network_id: "*",       // Any network (default: none)
      },
+     rinkeby: {
+       provider: function() {
+       return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/v3/7bbd060e566a497383fa37917365b23b");
+      },
+      network_id: 4,
+      gas: 4700000,
+      from: "<your ethereum address>".toLowerCase() //change this to your metamask address
+     }
 
     // Another network with more advanced options...
     // advanced: {
