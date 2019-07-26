@@ -267,16 +267,17 @@ contract ERC721 is Pausable, ERC165 {
     function approve(address to, uint256 tokenId) public {
         
         // TODO [v] require the given address to not be the owner of the tokenId
-        require(ownerOf(tokenId) != to, "Owner cannot send to himself");
+        address owner = ownerOf(tokenId);
+        require(owner != to, "Owner cannot send to himself");
 
         // TODO [v] require the msg sender to be the owner of the contract or isApprovedForAll() to be true
-        require(isOwner() || isApprovedForAll(_owner, msg.sender), "Unauthorized approve call");
+        require(isOwner() || isApprovedForAll(owner, msg.sender), "Unauthorized approve call");
 
         // TODO [v] add 'to' address to token approvals
         _tokenApprovals[tokenId] = to;
 
         // TODO [v] emit Approval Event
-        emit Approval(_owner, to, tokenId);
+        emit Approval(owner, to, tokenId);
 
     }
 
@@ -349,7 +350,7 @@ contract ERC721 is Pausable, ERC165 {
     function _mint(address to, uint256 tokenId) internal {
 
         // TODO [v] revert if given tokenId already exists or given address is invalid
-        require(_exists(tokenId) == false, "Token already exists")
+        require(_exists(tokenId) == false, "Token already exists");
   
         // TODO [v] mint tokenId to given address & increase token count of owner
         _ownedTokensCount[to].increment();
@@ -609,27 +610,25 @@ contract ERC721Metadata is ERC721Enumerable, usingOraclize {
     }
 
     // TODO: [v] create external getter functions for name, symbol, and baseTokenURI
-    function name()
-        external
-        returns (string)
+    function name() external view
+        returns (string memory)
     {
         return _name;
     }
-    function symbol()
-        external
-        returns (string)
+    function symbol() external view
+        returns (string memory)
     {
         return _symbol;
     }
-    function baseTokenURI()
-        external
-        returns (string)
+    function baseTokenURI() external view
+        returns (string memory  )
     {
         return _name;
     }
 
-    function tokenURI(uint256 tokenId) external view returns (string memory) {
-        require(_exists(tokenId));
+    function tokenURI(uint256 tokenId) external view
+        returns (string memory) {
+            require(_exists(tokenId));
         return _tokenURIs[tokenId];
     }
 
@@ -660,13 +659,13 @@ contract ERC721Metadata is ERC721Enumerable, usingOraclize {
 contract CustomERC721Token is ERC721Metadata
 {
     constructor(string memory name, string memory symbol) public
-    {
-        CustomERC721Token(name, symbol,
+        ERC721Metadata(name, symbol,
             "https://s3-us-west-2.amazonaws.com/udacity-blockchain/")
+    {
     }
 
-    function mint(address to, uint256 to)
-        isOwner()
+    function mint(address to, uint256 tokenId) public
+        onlyOwner()
         returns(bool)
     {
         super._mint(to, tokenId);
