@@ -348,11 +348,11 @@ contract ERC721 is Pausable, ERC165 {
     // @dev Internal function to mint a new token
     // TIP: remember the functions to use for Counters. you can refresh yourself with the link above
     function _mint(address to, uint256 tokenId) internal {
-
         // TODO [v] revert if given tokenId already exists or given address is invalid
         require(_exists(tokenId) == false, "Token already exists");
   
         // TODO [v] mint tokenId to given address & increase token count of owner
+        _tokenOwner[tokenId] = to;
         _ownedTokensCount[to].increment();
 
         // TODO [v] emit Transfer event
@@ -641,7 +641,7 @@ contract ERC721Metadata is ERC721Enumerable, usingOraclize {
     // require the token exists before setting
     function setTokenURI(uint256 tokenId) public
     {
-        require(_exists(tokenId));
+        require(_exists(tokenId), 'This token does not exists');
         _tokenURIs[tokenId] = strConcat(_baseTokenURI, uint2str(tokenId));
     }
 
@@ -668,7 +668,7 @@ contract CustomERC721Token is ERC721Metadata
         onlyOwner()
         returns(bool)
     {
-        super._mint(to, tokenId);
+        _mint(to, tokenId);
         setTokenURI(tokenId);
         return true;
     }
