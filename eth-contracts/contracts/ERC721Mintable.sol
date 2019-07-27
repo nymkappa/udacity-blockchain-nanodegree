@@ -660,7 +660,7 @@ contract CustomERC721Token is ERC721Metadata
 {
     constructor(string memory name, string memory symbol) public
         ERC721Metadata(name, symbol,
-            "https://s3-us-west-2.amazonaws.com/udacity-blockchain/")
+            "https://s3-us-west-2.amazonaws.com/udacity-blockchain/capstone/")
     {
     }
 
