@@ -56,7 +56,8 @@ You can simply copy paste the content of the previously mentioned file.
 If you want to test the contract/opensea as a owner, you can also find private keys in the `accounts` file in the root directory.
 These are only Rinkeby accounts so they don't hold any value.
 
-```Starting migrations...
+```
+Starting migrations...
 ======================
 > Network name:    'rinkeby'
 > Network id:      4
@@ -124,7 +125,8 @@ These are only Rinkeby accounts so they don't hold any value.
 Summary
 =======
 > Total deployments:   3
-> Final cost:          0.1189126 ETH```
+> Final cost:          0.1189126 ETH
+```
 
 # OpenSea market
 
