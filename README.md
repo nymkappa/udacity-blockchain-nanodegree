@@ -58,7 +58,7 @@ These are only Rinkeby accounts so they don't hold any value.
 
 # OpenSea market
 
-The market can be found at https://rinkeby.opensea.io/assets/weallgonnamakeit
+The market can be found at https://rinkeby.opensea.io/assets/weallgonnamakeit or https://rinkeby.opensea.io/storefront/weallgonnamakeit
 (For Udacity reviewer) At the time of the submission, there should be 10 minted token. 5 should be owned
 by the contract owner `0x4de4d6f678421e38fefdce142b35b22e6a08e0a8` and the 5 ohers have been bought by
 `0xd503a470ccfef64f4546287dccb7c8d22dc3c1e7`.
