@@ -15,11 +15,10 @@
     "lite-server": "2.4.0"
   },
   "dependencies": {
+    "bignumber.js": "^8.0.2",
     "ganache": "^6.4.4",
     "ganache-cli": "^6.4.4",
     "openzeppelin-solidity": "^2.2.0",
-    "bignumber.js": "^8.0.2",
-    "solc": "^0.5.2",
     "solc-js": "^0.5.2",
     "truffle": "^5.0.28",
     "truffle-assertions": "^0.9.1",

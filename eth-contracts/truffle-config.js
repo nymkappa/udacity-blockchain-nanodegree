@@ -54,7 +54,7 @@ module.exports = {
       },
       network_id: 4,
       gas: 4700000,
-      from: "<your ethereum address>".toLowerCase() //change this to your metamask address
+      from: "0x4de4d6f678421e38fefdce142b35b22e6a08e0a8".toLowerCase() //change this to your metamask address
      }
 
     // Another network with more advanced options...
